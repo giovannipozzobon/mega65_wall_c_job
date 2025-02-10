@@ -1,0 +1,13 @@
+.DS_Store
+wall-mega65.lst
+wall.d81
+wall.prg
+obj/file_fun.lst
+obj/file_fun.o
+obj/main.lst
+obj/main.o
+obj/mega65/debug_calypis.lst
+obj/mega65/debug_calypis.o
+obj/mega65/kernfileio.lst
+obj/mega65/kernfileio.o
+src/mega65/.source.txt
