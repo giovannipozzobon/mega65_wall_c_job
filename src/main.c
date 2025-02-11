@@ -23,6 +23,7 @@ void setscreen(unsigned char __far  *screen_begin);
 void setsprite(void);
 void set_480(void);
 void title_setup(void);
+void colorset_init(void);
 
 void main(void) {
 
@@ -34,6 +35,8 @@ void main(void) {
     setchar(attic_memory_charset);
     setscreen(attic_memory_screen);
     setsprite();
+    
+    colorset_init();    
 
     title_setup();
 
@@ -106,6 +109,30 @@ void setscreen(unsigned char __far  *screen_begin){
         //debug_char(screen[c]);
     }
 };
+
+void colorset_init(void)
+{
+  char stringa [10];
+  //char *color;
+  //color = (char *) &charcolor_begin;
+  debug_msg("COLOR SET");
+
+  // copy special characters
+  int num_color = 2000;
+
+  itoa(num_color, stringa+1,10);
+  stringa[0]='O';  
+  stringa[6]='\0';
+  debug_msg(stringa);
+
+  // il primo byte è zero e il secondo contiene un colore
+  // non so se venga utilizzato perché sembra sempre uguale
+  // da verificare come funziona perché non ho capito
+  for (int c = 0; c < num_color; c=c+2) {
+    FAR_U8_PTR(0xff80000) [c] = 0;
+    FAR_U8_PTR(0xff80000) [c+1] = 10;
+  }
+}
 
 void setsprite(void){
 
