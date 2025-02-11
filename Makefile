@@ -62,7 +62,9 @@ wall.d81: wall.prg
 #	$(PC)  -w65 -o "load.prg" -- "load.bas"
 #	$(PC)  -w65 -o "help.seq" -- "help.txt"
 	$(C1541) -format "jobond test,m1" d81 wall.d81; 
-	$(C1541) -attach wall.d81 -write wall.prg wall -write help.seq helpjedit,s; 
+	$(C1541) -attach wall.d81 -write wall.prg wall -write help.seq helpjedit,s -write C64Studio/Chars_gfx.bin chars,s \
+	 -write C64Studio/Screen_gfx.bin screen,s -write C64Studio/Sprite_gfx.bin sprite,s ; 
+
 
 clean:
 	-rm $(OBJS) $(OBJS:%.o=%.lst) $(OBJS_DEBUG) $(OBJS_DEBUG:%.o=%.lst)

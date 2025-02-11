@@ -5,19 +5,25 @@
 
 #define DEBUG
 
-unsigned char * makefilename(){
+unsigned char * makefilename(char * filename){
     unsigned char * namefile;
+    namefile = malloc(strlen("@:") + strlen(filename) + strlen(",SEQ") + 1);
     strcpy(namefile,"@:");
-    strcat(namefile, filetoloadsave);
+    strcat(namefile, filename);
     strcat(namefile, ",SEQ");
   
+    #ifdef DEBUG
+      debug_msg(namefile);
+    #endif
+
     return namefile;
   }
 
 void loadfile(char * filename){
     unsigned char * file; 
   
-    file = makefilename();
+
+    file = makefilename(filename);
 
     // set the map_regs for memory attic
     map_regs.a = bank_file;

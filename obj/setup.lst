@@ -1,0 +1,164 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for 6502                               version 5.8.1 #
+#                                                       11/Feb/2025  22:44:24 #
+# Command line: --target=mega65 --core 45gs02 --no-cross-call -I ./include    #
+#               --list-file=obj/setup.lst -o obj/setup.o src/setup.c          #
+#                                                                             #
+###############################################################################
+
+    \ 0000                      .rtmodel version,"1"
+    \ 0000                      .rtmodel codeModel,"plain"
+    \ 0000                      .rtmodel core,"45gs02"
+    \ 0000                      .rtmodel target,"mega65"
+    \ 0000                      .extern _Vfp
+    \ 0000                      .extern _Vsp
+    \ 0000                      .extern _Zp
+0001                #include <calypsi/intrinsics6502.h>
+0002                #include "chips.h"
+0003                #include "global.h"
+0004
+0005
+0006                void initial_setup(void){
+    \ 0000                      .section code,text
+    \ 0000                      .public initial_setup
+    \ 0000          initial_setup:
+0007                	__disable_interrupts();
+    \ 0000 78                   sei
+0008
+0009                	// set the speed to 40MHz
+0010                	CPU.PORTDDR = 65;
+    \ 0001 a941                 lda     #65
+    \ 0003 8d0000               sta     0
+0011
+0012                	// bank out everything except for I/O
+0013                	CPU.PORTDDR = 0b00000111;
+    \ 0006 a907                 lda     #7
+    \ 0008 8d0000               sta     0
+0014                	CPU.PORT    = 0b00000101;
+    \ 000b a905                 lda     #5
+    \ 000d 8d0100               sta     1
+0015                	
+0016                	// disable CIA interrupts
+0017                	/*CIA1.ICR = 0b01111111;
+0018                	CIA2.ICR = 0b01111111;
+0019
+0020                	CIA1.ICR;
+0021                	CIA2.ICR;
+0022                	*/
+0023
+0024                	// map I/O (Mega65 memory mapping)
+0025                	VIC3.ROM8  = 0;
+    \ 0010 a908                 lda     #8
+    \ 0012 1c30d0               trb     0xd030
+0026                	VIC3.ROMA  = 0;
+    \ 0015 a910                 lda     #16
+    \ 0017 1c30d0               trb     0xd030
+0027                	VIC3.ROMC  = 0;
+    \ 001a a920                 lda     #32
+    \ 001c 1c30d0               trb     0xd030
+0028                	VIC3.CROM9 = 0;
+    \ 001f a940                 lda     #64
+    \ 0021 1c30d0               trb     0xd030
+0029                	VIC3.ROME  = 0;
+    \ 0024 a980                 lda     #-128
+    \ 0026 1c30d0               trb     0xd030
+0030
+0031                	__asm(" lda #0x00\n"
+    \ 0029 a900                 lda     #0
+    \ 002b aa                   tax
+    \ 002c a8                   tay
+    \ 002d 4b                   taz
+    \ 002e 5c                   map
+    \ 002f ea                   nop
+0032                		  " tax\n"
+0033                		  " tay\n"
+0034                		  " taz\n"
+0035                		  " map\n"
+0036                		  " nop");
+0037
+0038                	// Enable the VIC4
+0039                	VIC3.KEY = 0x47;
+    \ 0030 a947                 lda     #71
+    \ 0032 8d2fd0               sta     0xd02f
+0040                	VIC3.KEY = 0x53;
+    \ 0035 a953                 lda     #83
+    \ 0037 8d2fd0               sta     0xd02f
+0041
+0042                	// disable RAM protection in banks 2 and 3
+0043                	poke(0xD640, 0x70);		// $d640 = HTRAP00
+    \ 003a a970                 lda     #112
+    \ 003c 8d40d6               sta     0xd640
+0044                	__no_operation();		// clv would be better
+    \ 003f ea                   nop
+0045
+0046                	// blank the screen while we do our initial loading
+0047                	VIC2.DEN = 0;
+    \ 0040 a910                 lda     #16
+    \ 0042 1c11d0               trb     0xd011
+0048                	
+0049                	// load the minimal data required to show the titlescreen
+0050                	//load_loader();
+0051                		
+0052                	
+0053                	// disable raster interrupts
+0054                	VIC4.FNRST    = 0;
+    \ 0045 a980                 lda     #-128
+    \ 0047 1c53d0               trb     0xd053
+0055                	VIC4.FNRSTCMP = 0;
+    \ 004a a980                 lda     #-128
+    \ 004c 1c7ad0               trb     0xd07a
+0056                	
+0057                	// enable 640 horizontal width
+0058                	VIC3.H640 = 1;
+    \ 004f ad31d0               lda     0xd031
+    \ 0052 0a                   asl     a
+    \ 0053 4a                   lsr     a
+    \ 0054 0980                 ora     #-128
+    \ 0056 8d31d0               sta     0xd031
+0059                	
+0060                	// disable hot registers
+0061                	VIC4.HOTREG = 0;
+    \ 0059 a980                 lda     #-128
+    \ 005b 1c5dd0               trb     0xd05d
+0062
+0063
+0064                }
+    \ 005e 60                   rts
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_charset
+    \ 0000          attic_memory_charset:
+    \ 0000 00450108             .long   0x8014500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_sprite
+    \ 0000          attic_memory_sprite:
+    \ 0000 00450208             .long   0x8024500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_screen
+    \ 0000          attic_memory_screen:
+    \ 0000 00450308             .long   0x8034500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_attr
+    \ 0000          attic_memory_attr:
+    \ 0000 00450408             .long   0x8044500
+    \ 0000                      .section data,data
+    \ 0000                      .public charfile
+    \ 0000 43484152 charfile:   .byte   67,72,65,82,83,0
+    \ 0004 5300
+    \ 0000                      .section data,data
+    \ 0000                      .public screenfile
+    \ 0000 53435245 screenfile: .byte   83,67,82,69,69,78,0
+    \ 0004 454e00
+    \ 0000                      .section data,data
+    \ 0000                      .public spritefile
+    \ 0000 53505249 spritefile: .byte   83,80,82,73,84,69,0
+    \ 0004 544500
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable  (Text): 95 bytes
+Data              : 36 bytes
