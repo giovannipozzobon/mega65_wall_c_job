@@ -72,7 +72,7 @@ clean:
 	-rm *.raw
 
 xemu:
-	test -f wall.prg && /Applications/Mega65/bin/xmega65 -besure -uartmon :4510 -8 ./wall.D81 -prg wall.prg
+	test -f wall.prg && /Applications/Mega65/bin/xmega65 -curskeyjoy -besure -uartmon :4510 -8 ./wall.D81 -prg wall.prg
 #	$(XMEGA65) -uartmon :4510 -8 wall.d81 -besure -curskeyjoy -videostd 0
 #	$(XMEGA65) -uartmon :4510 -prg wall.prg -besure -curskeyjoy -videostd 0
 

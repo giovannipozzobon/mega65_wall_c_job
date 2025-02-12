@@ -11,3 +11,10 @@ obj/mega65/debug_calypis.o
 obj/mega65/kernfileio.lst
 obj/mega65/kernfileio.o
 src/mega65/.source.txt
+obj/func_job.lst
+obj/func_job.o
+obj/input.lst
+obj/input.o
+obj/setup.lst
+src/.source.txt
+

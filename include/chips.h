@@ -589,8 +589,8 @@ struct _IRQ_VECTORS {
 //#define DMA         (* (volatile _DMA_t *)         0xd700)
 //#define MATH        (* (volatile _MATH_t *)        0xd70f)
 #define AUDIO_DMA   (* (volatile _AUDIO_DMA_t *)   0xd71c)
-//#define CIA1        (* (volatile _CIA1_t *)        0xdc00)
-//#define CIA2        (* (volatile _CIA2_t *)        0xdd00)
+#define CIA1        (* (volatile _CIA1_t *)        0xdc00)
+#define CIA2        (* (volatile _CIA2_t *)        0xdd00)
 #define IRQ_VECTORS (* (volatile _IRQ_VECTORS_t *) 0xfffa)
 
 #endif

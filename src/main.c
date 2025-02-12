@@ -7,6 +7,8 @@
 #include <mega65/debug_calypis.h>
 #include <chips.h>
 #include <setup.h>
+#include <input.h>
+#include <func_job.h>
 
 
 #define DEBUG
@@ -21,6 +23,7 @@ unsigned char bank_file;
 
 void loadresource(void);
 void setup_resource(void);
+void gameloop(void);
 
 
 void main(void) {
@@ -30,8 +33,33 @@ void main(void) {
 
     setup_resource();
 
+    gameloop();
+
     return;
 
+}
+
+void gameloop(void) {
+
+    while(1) {
+        
+       wait_very_briefly(DELAY_JOY);
+
+        process_input();
+        // do other stuff
+        // left?
+		if (player_input & 0b00000100)  {   
+            // move left
+            debug_msg("JOY LEFT");
+        }
+        // right?
+        if (player_input & 0b00001000) {
+            // move right
+            debug_msg("JOY RIGTH");
+        }
+
+
+    }
 }
 
 void loadresource(void) {
