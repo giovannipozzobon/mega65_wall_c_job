@@ -1,7 +1,7 @@
 ###############################################################################
 #                                                                             #
 # Calypsi ISO C compiler for 6502                               version 5.8.1 #
-#                                                       11/Feb/2025  22:44:24 #
+#                                                       12/Feb/2025  21:48:58 #
 # Command line: --target=mega65 --core 45gs02 --no-cross-call -I ./include    #
 #               --list-file=obj/setup.lst -o obj/setup.o src/setup.c          #
 #                                                                             #
@@ -11,120 +11,1007 @@
     \ 0000                      .rtmodel codeModel,"plain"
     \ 0000                      .rtmodel core,"45gs02"
     \ 0000                      .rtmodel target,"mega65"
+    \ 0000                      .extern _AllocStack
+    \ 0000                      .extern _AllocStackSave
+    \ 0000                      .extern _DeallocStack
+    \ 0000                      .extern _DeallocStackRestore
+    \ 0000                      .extern _LoadVspEA
     \ 0000                      .extern _Vfp
     \ 0000                      .extern _Vsp
     \ 0000                      .extern _Zp
+    \ 0000                      .extern debug_msg
+    \ 0000                      .extern itoa
 0001                #include <calypsi/intrinsics6502.h>
 0002                #include "chips.h"
 0003                #include "global.h"
-0004
+0004                #include "setup.h"
 0005
-0006                void initial_setup(void){
+0006                __attribute__((aligned(64))) unsigned int SPRITE_SPACE[360];
+0007
+0008                void initial_setup(void){
     \ 0000                      .section code,text
     \ 0000                      .public initial_setup
     \ 0000          initial_setup:
-0007                	__disable_interrupts();
+0009                	__disable_interrupts();
     \ 0000 78                   sei
-0008
-0009                	// set the speed to 40MHz
-0010                	CPU.PORTDDR = 65;
+0010
+0011                	// set the speed to 40MHz
+0012                	CPU.PORTDDR = 65;
     \ 0001 a941                 lda     #65
     \ 0003 8d0000               sta     0
-0011
-0012                	// bank out everything except for I/O
-0013                	CPU.PORTDDR = 0b00000111;
+0013
+0014                	// bank out everything except for I/O
+0015                	CPU.PORTDDR = 0b00000111;
     \ 0006 a907                 lda     #7
     \ 0008 8d0000               sta     0
-0014                	CPU.PORT    = 0b00000101;
+0016                	CPU.PORT    = 0b00000101;
     \ 000b a905                 lda     #5
     \ 000d 8d0100               sta     1
-0015                	
-0016                	// disable CIA interrupts
-0017                	/*CIA1.ICR = 0b01111111;
-0018                	CIA2.ICR = 0b01111111;
-0019
-0020                	CIA1.ICR;
-0021                	CIA2.ICR;
-0022                	*/
-0023
-0024                	// map I/O (Mega65 memory mapping)
-0025                	VIC3.ROM8  = 0;
+0017                	
+0018                	// disable CIA interrupts
+0019                	/*CIA1.ICR = 0b01111111;
+0020                	CIA2.ICR = 0b01111111;
+0021
+0022                	CIA1.ICR;
+0023                	CIA2.ICR;
+0024                	*/
+0025
+0026                	// map I/O (Mega65 memory mapping)
+0027                	VIC3.ROM8  = 0;
     \ 0010 a908                 lda     #8
     \ 0012 1c30d0               trb     0xd030
-0026                	VIC3.ROMA  = 0;
+0028                	VIC3.ROMA  = 0;
     \ 0015 a910                 lda     #16
     \ 0017 1c30d0               trb     0xd030
-0027                	VIC3.ROMC  = 0;
+0029                	VIC3.ROMC  = 0;
     \ 001a a920                 lda     #32
     \ 001c 1c30d0               trb     0xd030
-0028                	VIC3.CROM9 = 0;
+0030                	VIC3.CROM9 = 0;
     \ 001f a940                 lda     #64
     \ 0021 1c30d0               trb     0xd030
-0029                	VIC3.ROME  = 0;
+0031                	VIC3.ROME  = 0;
     \ 0024 a980                 lda     #-128
     \ 0026 1c30d0               trb     0xd030
-0030
-0031                	__asm(" lda #0x00\n"
+0032                	
+0033                	__asm(" lda #0x00\n"
     \ 0029 a900                 lda     #0
     \ 002b aa                   tax
     \ 002c a8                   tay
     \ 002d 4b                   taz
     \ 002e 5c                   map
     \ 002f ea                   nop
-0032                		  " tax\n"
-0033                		  " tay\n"
-0034                		  " taz\n"
-0035                		  " map\n"
-0036                		  " nop");
-0037
-0038                	// Enable the VIC4
-0039                	VIC3.KEY = 0x47;
+0034                		  " tax\n"
+0035                		  " tay\n"
+0036                		  " taz\n"
+0037                		  " map\n"
+0038                		  " nop");
+0039                	
+0040                	
+0041                	// Enable the VIC4
+0042                	VIC3.KEY = 0x47;
     \ 0030 a947                 lda     #71
     \ 0032 8d2fd0               sta     0xd02f
-0040                	VIC3.KEY = 0x53;
+0043                	VIC3.KEY = 0x53;
     \ 0035 a953                 lda     #83
     \ 0037 8d2fd0               sta     0xd02f
-0041
-0042                	// disable RAM protection in banks 2 and 3
-0043                	poke(0xD640, 0x70);		// $d640 = HTRAP00
+0044
+0045                	// disable RAM protection in banks 2 and 3
+0046                	poke(0xD640, 0x70);		// $d640 = HTRAP00
     \ 003a a970                 lda     #112
     \ 003c 8d40d6               sta     0xd640
-0044                	__no_operation();		// clv would be better
+0047                	__no_operation();		// clv would be better
     \ 003f ea                   nop
-0045
-0046                	// blank the screen while we do our initial loading
-0047                	VIC2.DEN = 0;
+0048
+0049                	// blank the screen while we do our initial loading
+0050                	VIC2.DEN = 0;
     \ 0040 a910                 lda     #16
     \ 0042 1c11d0               trb     0xd011
-0048                	
-0049                	// load the minimal data required to show the titlescreen
-0050                	//load_loader();
-0051                		
-0052                	
-0053                	// disable raster interrupts
-0054                	VIC4.FNRST    = 0;
+0051
+0052                	// disable raster interrupts
+0053                	VIC4.FNRST    = 0;
     \ 0045 a980                 lda     #-128
     \ 0047 1c53d0               trb     0xd053
-0055                	VIC4.FNRSTCMP = 0;
+0054                	VIC4.FNRSTCMP = 0;
     \ 004a a980                 lda     #-128
     \ 004c 1c7ad0               trb     0xd07a
-0056                	
-0057                	// enable 640 horizontal width
-0058                	VIC3.H640 = 1;
+0055                	
+0056                	// enable 640 horizontal width
+0057                	VIC3.H640 = 1;
     \ 004f ad31d0               lda     0xd031
     \ 0052 0a                   asl     a
     \ 0053 4a                   lsr     a
     \ 0054 0980                 ora     #-128
     \ 0056 8d31d0               sta     0xd031
-0059                	
-0060                	// disable hot registers
-0061                	VIC4.HOTREG = 0;
+0058                	
+0059                	// disable hot registers
+0060                	VIC4.HOTREG = 0;
     \ 0059 a980                 lda     #-128
     \ 005b 1c5dd0               trb     0xd05d
+0061
 0062
-0063
-0064                }
+0063                }
     \ 005e 60                   rts
+0064
+0065
+0066                void screen_setup() {
+    \ 0000                      .section code,text
+    \ 0000                      .public screen_setup
+    \ 0000          screen_setup:
+0067
+0068                	// enable 640 horizontal width
+0069                	//VIC3.H640 = 1;
+0070                	VIC3.H640 = 0;
+    \ 0000 a980                 lda     #-128
+    \ 0002 1c31d0               trb     0xd031
+0071                	
+0072                	// disable hot registers
+0073                	//VIC4.HOTREG = 0;
+0074                	VIC4.HOTREG = 0;
+    \ 0005 a980                 lda     #-128
+    \ 0007 1c5dd0               trb     0xd05d
+0075                	
+0076                	// use wide character lookup (i.e. character data anywhere in memory)
+0077                	VIC4.CHR16 = 1;
+    \ 000a ad54d0               lda     0xd054
+    \ 000d 4a                   lsr     a
+    \ 000e 0a                   asl     a
+    \ 000f 0901                 ora     #1
+    \ 0011 8d54d0               sta     0xd054
+0078                	//VIC4.CHR16 = 0;
+0079                	
+0080                	// set multicolor mode - allows use of both color palettes
+0081                	// probably not necessary to turn this on, but it also doesn't hurt.
+0082                	VIC2.MCM = 1;
+    \ 0014 ad16d0               lda     0xd016
+    \ 0017 85..                 sta     zp:_Zp
+    \ 0019 47..                 rmb4    zp:_Zp
+    \ 001b c7..                 smb4    zp:_Zp
+    \ 001d a5..                 lda     zp:_Zp
+    \ 001f 8d16d0               sta     0xd016
+0083                	
+0084
+0085                	// set 480 vertical resolution
+0086                	set_480();
+    \ 0022 20....               jsr     set_480
+0087
+0088
+0089                	VIC4.LINESTEP    = TITLE_LINE_LENGTH;
+    \ 0025 a900                 lda     #0
+    \ 0027 8d59d0               sta     0xd059
+    \ 002a a950                 lda     #80
+    \ 002c 8d58d0               sta     0xd058
+0090                	VIC4.CHRCOUNTLSB = TITLE_LINE_LENGTH/2;
+    \ 002f a928                 lda     #40
+    \ 0031 8d5ed0               sta     0xd05e
+0091                	VIC4.CHRCOUNTMSB = (TITLE_LINE_LENGTH/2) >> 8;
+    \ 0034 a930                 lda     #48
+    \ 0036 1c63d0               trb     0xd063
+0092                	VIC4.DISPROWS    = TITLE_LINE_COUNT;
+    \ 0039 a918                 lda     #24
+    \ 003b 8d7bd0               sta     0xd07b
+0093
+0094                	// use NCM and FCM for all characters
+0095                	VIC4.FCLRLO = 0;	// lower block, i.e. 0-255
+    \ 003e a902                 lda     #2
+    \ 0040 1c54d0               trb     0xd054
+0096                	VIC4.FCLRHI = 1;	// everything above 255
+    \ 0043 ad54d0               lda     0xd054
+    \ 0046 85..                 sta     zp:_Zp
+    \ 0048 27..                 rmb2    zp:_Zp
+    \ 004a a7..                 smb2    zp:_Zp
+    \ 004c a5..                 lda     zp:_Zp
+    \ 004e 8d54d0               sta     0xd054
+0097
+0098                	// set tile map location
+0099                	VIC4.SCRNPTR    = SCREEN_MAP & 0xffff;
+    \ 0051 a900                 lda     #0
+    \ 0053 8d61d0               sta     0xd061
+    \ 0056 a900                 lda     #0
+    \ 0058 8d60d0               sta     0xd060
+0100                	VIC4.SCRNPTRBNK = (SCREEN_MAP & 0xf0000) >> 16;
+    \ 005b a905                 lda     #5
+    \ 005d 8d62d0               sta     0xd062
+0101                	VIC4.SCRNPTRMB  = 0x0;
+    \ 0060 a90f                 lda     #15
+    \ 0062 1c63d0               trb     0xd063
+0102
+0103                	// load the attribute map into $ff80000
+0104                	
+0105                    //run_dma_job((__far char *)&load_title_attrmap);
+0106
+0107                	// set the border and screen colors to red, to match the picture
+0108                	//VIC2.BORDERCOL = 28;
+0109                	//VIC2.SCREENCOL = 28;
+0110                	VIC2.BORDERCOL = 0;
+    \ 0065 a900                 lda     #0
+    \ 0067 8d20d0               sta     0xd020
+0111                	VIC2.SCREENCOL = 0;
+    \ 006a a900                 lda     #0
+    \ 006c 8d21d0               sta     0xd021
+0112
+0113                	// unblank the screen
+0114                	VIC2.DEN = 1;
+    \ 006f ad11d0               lda     0xd011
+    \ 0072 85..                 sta     zp:_Zp
+    \ 0074 47..                 rmb4    zp:_Zp
+    \ 0076 c7..                 smb4    zp:_Zp
+    \ 0078 a5..                 lda     zp:_Zp
+    \ 007a 8d11d0               sta     0xd011
+0115                		
+0116                	// initalize the music
+0117                	//musicInit();
+0118                }
+    \ 007d 60                   rts
+0119
+0120                /// This procedure sets the top and bottom border positions to allow 480 pixels
+0121                /// to be displayed.
+0122                void set_480() {
+    \ 0000                      .section code,text
+    \ 0000                      .public set_480
+    \ 0000          set_480:
+0123
+0124                	// set 480 vertical resolution - this is video standard dependent.
+0125                	if (VIC4.PALNTSC) {
+    \ 0000 2c6fd0               bit     0xd06f
+    \ 0003 1025                 bpl     `?L10`
+0126                		VIC4.TBDRPOSLSB  = 0x01;	// defaults to $37/55
+    \ 0005 a901                 lda     #1
+    \ 0007 8d48d0               sta     0xd048
+0127                		VIC4.TBDRPOSMSB  = 0;	    // defaults to $00/0
+    \ 000a a90f                 lda     #15
+    \ 000c 1c49d0               trb     0xd049
+0128                		VIC4.BBDRPOSLSB  = 0xe1;	// defaults to $c7/199
+    \ 000f a9e1                 lda     #-31
+    \ 0011 8d4ad0               sta     0xd04a
+0129                		VIC4.BBDRPOSMSB  = 0x1;	    // defaults to $01/1		(i.e. 455)
+    \ 0014 ad4bd0               lda     0xd04b
+    \ 0017 29f0                 and     #-16
+    \ 0019 0901                 ora     #1
+    \ 001b 8d4bd0               sta     0xd04b
+0130                		
+0131                		VIC4.TEXTYPOSLSB = 0x01;
+    \ 001e a901                 lda     #1
+    \ 0020 8d4ed0               sta     0xd04e
+0132                		VIC4.TEXTYPOSMSB = 0;
+    \ 0023 a90f                 lda     #15
+    \ 0025 1c4fd0               trb     0xd04f
+    \ 0028 8023                 bra     `?L11`
+    \ 002a          `?L10`:
+0133                	} else {
+0134                		VIC4.TBDRPOSLSB  = 0x40;	// defaults to $68/104
+    \ 002a a940                 lda     #64
+    \ 002c 8d48d0               sta     0xd048
+0135                		VIC4.TBDRPOSMSB  = 0;	    // defaults to $00/0
+    \ 002f a90f                 lda     #15
+    \ 0031 1c49d0               trb     0xd049
+0136                		VIC4.BBDRPOSLSB  = 0x20;	// defaults to $f8/248
+    \ 0034 a920                 lda     #32
+    \ 0036 8d4ad0               sta     0xd04a
+0137                		VIC4.BBDRPOSMSB  = 0x2;	    // defaults to $01/1		(i.e. 504)
+    \ 0039 ad4bd0               lda     0xd04b
+    \ 003c 29f0                 and     #-16
+    \ 003e 0902                 ora     #2
+    \ 0040 8d4bd0               sta     0xd04b
+0138                		
+0139                		VIC4.TEXTYPOSLSB = 0x40;
+    \ 0043 a940                 lda     #64
+    \ 0045 8d4ed0               sta     0xd04e
+0140                		VIC4.TEXTYPOSMSB = 0;
+    \ 0048 a90f                 lda     #15
+    \ 004a 1c4fd0               trb     0xd04f
+    \ 004d          `?L11`:
+0141                	}
+0142                }
+    \ 004d 60                   rts
+0143
+0144                void sprite_setup(void){
+    \ 0000                      .section code,text
+    \ 0000                      .public sprite_setup
+    \ 0000          sprite_setup:
+    \ 0000 a2f6                 ldx     #246
+    \ 0002 20....               jsr     _AllocStack
+0145
+0146                	char stringa [10];
+0147                  
+0148                	char *sprite_ptr;
+0149                	//sprite_ptr = (char *) (SPRITE_RAM);
+0150                	sprite_ptr = (char *) (SPRITE_SPACE);
+    \ 0005 a9..                 lda     #.byte0 SPRITE_SPACE
+    \ 0007 85..                 sta     zp:_Zp
+    \ 0009 a9..                 lda     #.byte1 SPRITE_SPACE
+    \ 000b 85..                 sta     zp:_Zp+1
+0151                	//debug_msg("SPRITE SET");
+0152                  
+0153                	// set data for 1st sprite
+0154                	SPRITE_PTRS[0] = (((int)sprite_ptr) >> 6);
+    \ 000d a5..                 lda     zp:_Zp
+    \ 000f 85..                 sta     zp:_Zp+2
+    \ 0011 a5..                 lda     zp:_Zp+1
+    \ 0013 85..                 sta     zp:_Zp+3
+    \ 0015 a206                 ldx     #6
+    \ 0017 e8                   inx
+    \ 0018 ca                   dex
+    \ 0019 f009                 beq     `?L46`
+    \ 001b a5..                 lda     zp:_Zp+3
+    \ 001d          `?L47`:
+    \ 001d 44..                 asr     zp:_Zp+3
+    \ 001f 66..                 ror     zp:_Zp+2
+    \ 0021 ca                   dex
+    \ 0022 d0f9                 bne     `?L47`
+    \ 0024          `?L46`:
+    \ 0024 a5..                 lda     zp:_Zp+3
+    \ 0026 8d....               sta     SPRITE_PTRS+1
+    \ 0029 a5..                 lda     zp:_Zp+2
+    \ 002b 8d....               sta     SPRITE_PTRS
+0155                  
+0156                	// set data for 1st sprite
+0157                	SPRITE_PTRS[1] = ((((int)sprite_ptr)+24*8) >> 6);
+    \ 002e a5..                 lda     zp:_Zp
+    \ 0030 18                   clc
+    \ 0031 69c0                 adc     #192
+    \ 0033 85..                 sta     zp:_Zp+2
+    \ 0035 a5..                 lda     zp:_Zp+1
+    \ 0037 6900                 adc     #0
+    \ 0039 85..                 sta     zp:_Zp+3
+    \ 003b a206                 ldx     #6
+    \ 003d e8                   inx
+    \ 003e ca                   dex
+    \ 003f f009                 beq     `?L49`
+    \ 0041 a5..                 lda     zp:_Zp+3
+    \ 0043          `?L50`:
+    \ 0043 44..                 asr     zp:_Zp+3
+    \ 0045 66..                 ror     zp:_Zp+2
+    \ 0047 ca                   dex
+    \ 0048 d0f9                 bne     `?L50`
+    \ 004a          `?L49`:
+    \ 004a a5..                 lda     zp:_Zp+3
+    \ 004c 8d....               sta     SPRITE_PTRS+3
+    \ 004f a5..                 lda     zp:_Zp+2
+    \ 0051 8d....               sta     SPRITE_PTRS+2
+0158                  
+0159                  
+0160                	itoa((int)sprite_ptr, stringa+1,10);
+    \ 0054 a90a                 lda     #10
+    \ 0056 85..                 sta     zp:_Zp+4
+    \ 0058 a900                 lda     #0
+    \ 005a 85..                 sta     zp:_Zp+5
+    \ 005c a2..                 ldx     #_Zp+2
+    \ 005e a901                 lda     #1
+    \ 0060 20....               jsr     _LoadVspEA
+    \ 0063 20....               jsr     itoa
+0161                	stringa[0]='S';  
+    \ 0066 a953                 lda     #83
+    \ 0068 a000                 ldy     #0
+    \ 006a 91..                 sta     (_Vsp),y
+0162                	stringa[6]='\0';
+    \ 006c a900                 lda     #0
+    \ 006e a006                 ldy     #6
+    \ 0070 91..                 sta     (_Vsp),y
+0163                	//debug_msg(stringa);
+0164                  
+0165                	itoa(SPRITE_PTRS[0], stringa+1,10);
+    \ 0072 a90a                 lda     #10
+    \ 0074 85..                 sta     zp:_Zp+4
+    \ 0076 a900                 lda     #0
+    \ 0078 85..                 sta     zp:_Zp+5
+    \ 007a a2..                 ldx     #_Zp+2
+    \ 007c a901                 lda     #1
+    \ 007e 20....               jsr     _LoadVspEA
+    \ 0081 ad....               lda     SPRITE_PTRS
+    \ 0084 85..                 sta     zp:_Zp
+    \ 0086 ad....               lda     SPRITE_PTRS+1
+    \ 0089 85..                 sta     zp:_Zp+1
+    \ 008b 20....               jsr     itoa
+0166                	stringa[0]='S';  
+    \ 008e a953                 lda     #83
+    \ 0090 a000                 ldy     #0
+    \ 0092 91..                 sta     (_Vsp),y
+0167                	stringa[6]='\0';
+    \ 0094 a900                 lda     #0
+    \ 0096 a006                 ldy     #6
+    \ 0098 91..                 sta     (_Vsp),y
+0168                	//debug_msg(stringa);
+0169                  
+0170                	itoa((unsigned int)SPRITE_PTRS, stringa+1,10);
+    \ 009a a90a                 lda     #10
+    \ 009c 85..                 sta     zp:_Zp+4
+    \ 009e a900                 lda     #0
+    \ 00a0 85..                 sta     zp:_Zp+5
+    \ 00a2 a2..                 ldx     #_Zp+2
+    \ 00a4 a901                 lda     #1
+    \ 00a6 20....               jsr     _LoadVspEA
+    \ 00a9 a9..                 lda     #.byte0 SPRITE_PTRS
+    \ 00ab 85..                 sta     zp:_Zp
+    \ 00ad a9..                 lda     #.byte1 SPRITE_PTRS
+    \ 00af 85..                 sta     zp:_Zp+1
+    \ 00b1 20....               jsr     itoa
+0171                	stringa[0]='S';  
+    \ 00b4 a953                 lda     #83
+    \ 00b6 a000                 ldy     #0
+    \ 00b8 91..                 sta     (_Vsp),y
+0172                	stringa[6]='\0';
+    \ 00ba a900                 lda     #0
+    \ 00bc a006                 ldy     #6
+    \ 00be 91..                 sta     (_Vsp),y
+0173                	//debug_msg(stringa);
+0174                  
+0175                	// set location of 16 bit sprite pointers 
+0176                	VIC4.SPRPTRADR = (unsigned int)SPRITE_PTRS;
+    \ 00c0 a9..                 lda     #.byte0 SPRITE_PTRS
+    \ 00c2 8d6cd0               sta     0xd06c
+    \ 00c5 a9..                 lda     #.byte1 SPRITE_PTRS
+    \ 00c7 8d6dd0               sta     0xd06d
+0177                  
+0178                	// enable location of 16 bit sprite pointers bank 
+0179                	VIC4.SPRPTR16 = 0x01;
+    \ 00ca ad6ed0               lda     0xd06e
+    \ 00cd 0a                   asl     a
+    \ 00ce 4a                   lsr     a
+    \ 00cf 0980                 ora     #-128
+    \ 00d1 8d6ed0               sta     0xd06e
+0180                  
+0181                	// full colour sprite mode for sprites (SPR16EN)
+0182                	VIC4.SPR16EN = 0x03;
+    \ 00d4 a903                 lda     #3
+    \ 00d6 8d6bd0               sta     0xd06b
+0183                  
+0184                	// 16 pixel wide for sprites (SPRX64EN) 53335
+0185                	VIC4.SPRX64EN = 0x03;
+    \ 00d9 a903                 lda     #3
+    \ 00db 8d57d0               sta     0xd057
+0186                  
+0187                	// 21 pixel high sprite heights
+0188                	VIC4.SPRHGHT = 21;
+    \ 00de a915                 lda     #21
+    \ 00e0 8d56d0               sta     0xd056
+0189                  
+0190                	// all sprites use height in $d056 sprhgten
+0191                	VIC4.SPRHGTEN = 0xFF;
+    \ 00e3 a9ff                 lda     #-1
+    \ 00e5 8d55d0               sta     0xd055
+0192                  
+0193                	// sprite multicolor 1
+0194                	VIC2.SPRMC0 = 0x08;
+    \ 00e8 a908                 lda     #8
+    \ 00ea 8d25d0               sta     0xd025
+0195                  
+0196                	// sprite multicolor 1
+0197                	VIC2.SPRMC1 = 0x06;
+    \ 00ed a906                 lda     #6
+    \ 00ef 8d26d0               sta     0xd026
+0198                  
+0199                	// sprite 0 position X
+0200                	VIC2.S0X = 0x20;
+    \ 00f2 a920                 lda     #32
+    \ 00f4 8d00d0               sta     0xd000
+0201                  
+0202                	// sprite 0 position Y
+0203                	VIC2.S0Y = 0x20;
+    \ 00f7 a920                 lda     #32
+    \ 00f9 8d01d0               sta     0xd001
+0204                  
+0205                	// sprite 1 position X
+0206                	VIC2.S1X = 0x80;
+    \ 00fc a980                 lda     #-128
+    \ 00fe 8d02d0               sta     0xd002
+0207                  
+0208                	// sprite 1 position Y
+0209                	VIC2.S1Y = 0x80;
+    \ 0101 a980                 lda     #-128
+    \ 0103 8d03d0               sta     0xd003
+0210                  
+0211                	// Sprite enable (SE)
+0212                	VIC2.SE = 0x03;
+    \ 0106 a903                 lda     #3
+    \ 0108 8d15d0               sta     0xd015
+0213                  
+0214                	// Sprite 0 color 
+0215                	VIC2.SPR0COL = 0x00;
+    \ 010b a900                 lda     #0
+    \ 010d 8d27d0               sta     0xd027
+0216                	
+0217                	// Sprite 1 color 
+0218                	VIC2.SPR1COL = 0x00;
+    \ 0110 a900                 lda     #0
+    \ 0112 8d28d0               sta     0xd028
+0219                  
+0220                  }
+    \ 0115 a20a                 ldx     #10
+    \ 0117 4c....               jmp     _DeallocStack
+0221                  
+0222
+0223                void setsprite(unsigned char __far  *sprite_begin){
+    \ 0000                      .section code,text
+    \ 0000                      .public setsprite
+    \ 0000 a2f6     setsprite:  ldx     #246
+    \ 0002 a005                 ldy     #5
+    \ 0004 20....               jsr     _AllocStackSave
+    \ 0007 4242a5..             ldq     zp:_Zp
+    \ 000b 424285..             stq     zp:_Zp+24
+0224
+0225                    char stringa [10];
+0226                    char *sprite;
+0227                    sprite = (char *) (sprite_begin);
+    \ 000f a5..                 lda     zp:_Zp+24
+    \ 0011 85..                 sta     zp:_Zp
+    \ 0013 a5..                 lda     zp:_Zp+25
+    \ 0015 85..                 sta     zp:_Zp+1
+0228                  
+0229                    debug_msg("SPRITE");
+    \ 0017 a9..                 lda     #.byte0 _StringLiteral_SPRITE
+    \ 0019 85..                 sta     zp:_Zp
+    \ 001b a9..                 lda     #.byte1 _StringLiteral_SPRITE
+    \ 001d 85..                 sta     zp:_Zp+1
+    \ 001f 20....               jsr     debug_msg
+0230                  
+0231                    int len_sprite_definitions = LEN_SPRITE;
+    \ 0022 a968                 lda     #104
+    \ 0024 85..                 sta     zp:_Zp+28
+    \ 0026 a901                 lda     #1
+    \ 0028 85..                 sta     zp:_Zp+29
+0232                    itoa(len_sprite_definitions, stringa+1,10);
+    \ 002a a90a                 lda     #10
+    \ 002c 85..                 sta     zp:_Zp+4
+    \ 002e a900                 lda     #0
+    \ 0030 85..                 sta     zp:_Zp+5
+    \ 0032 a2..                 ldx     #_Zp+2
+    \ 0034 a901                 lda     #1
+    \ 0036 20....               jsr     _LoadVspEA
+    \ 0039 a5..                 lda     zp:_Zp+28
+    \ 003b 85..                 sta     zp:_Zp
+    \ 003d a5..                 lda     zp:_Zp+29
+    \ 003f 85..                 sta     zp:_Zp+1
+    \ 0041 20....               jsr     itoa
+0233                    stringa[0]='C';  
+    \ 0044 a943                 lda     #67
+    \ 0046 a000                 ldy     #0
+    \ 0048 91..                 sta     (_Vsp),y
+0234                    stringa[6]='\0';
+    \ 004a a900                 lda     #0
+    \ 004c a006                 ldy     #6
+    \ 004e 91..                 sta     (_Vsp),y
+0235                    debug_msg(stringa);
+    \ 0050 a5..                 lda     zp:_Vsp
+    \ 0052 85..                 sta     zp:_Zp
+    \ 0054 a5..                 lda     zp:_Vsp+1
+    \ 0056 85..                 sta     zp:_Zp+1
+    \ 0058 20....               jsr     debug_msg
+0236                  
+0237                  
+0238                    for (int c = 0; c < len_sprite_definitions; c++) {
+    \ 005b a900                 lda     #0
+    \ 005d 85..                 sta     zp:_Zp
+    \ 005f a900                 lda     #0
+    \ 0061 85..                 sta     zp:_Zp+1
+    \ 0063          `?L20`:
+    \ 0063 a5..                 lda     zp:_Zp
+    \ 0065 c5..                 cmp     zp:_Zp+28
+    \ 0067 a5..                 lda     zp:_Zp+1
+    \ 0069 e5..                 sbc     zp:_Zp+29
+    \ 006b 5002                 bvc     `?L63`
+    \ 006d 4980                 eor     #-128
+    \ 006f 3007     `?L63`:     bmi     `?L19`
+0239                        //FAR_U8_PTR(SPRITE_RAM) [c] = sprite_begin[c]; 
+0240                        FAR_U8_PTR(SPRITE_SPACE) [c] = sprite_begin[c]; 
+0241                        //debug_char(charset[c]);
+0242                    }
+0243
+0244                };
+    \ 0071 a20a                 ldx     #10
+    \ 0073 a005                 ldy     #5
+    \ 0075 4c....               jmp     _DeallocStackRestore
+    \ 0078          `?L19`:
+    \ 0078 4242a5..             ldq     zp:_Zp+24
+    \ 007c 424285..             stq     zp:_Zp+4
+    \ 0080 18                   clc
+    \ 0081 a5..                 lda     zp:_Zp+4
+    \ 0083 65..                 adc     zp:_Zp
+    \ 0085 85..                 sta     zp:_Zp+4
+    \ 0087 a5..                 lda     zp:_Zp+5
+    \ 0089 65..                 adc     zp:_Zp+1
+    \ 008b 85..                 sta     zp:_Zp+5
+    \ 008d a300                 ldz     #0
+    \ 008f eab2..               lda     [_Zp+4],z
+    \ 0092 48                   pha
+    \ 0093 a2..                 ldx     #.byte0 SPRITE_SPACE
+    \ 0095 86..                 stx     zp:_Zp+2
+    \ 0097 a2..                 ldx     #.byte1 SPRITE_SPACE
+    \ 0099 86..                 stx     zp:_Zp+3
+    \ 009b a6..                 ldx     zp:_Zp+3
+    \ 009d 86..                 stx     zp:_Zp+5
+    \ 009f a6..                 ldx     zp:_Zp+2
+    \ 00a1 86..                 stx     zp:_Zp+4
+    \ 00a3 a200                 ldx     #0
+    \ 00a5 86..                 stx     zp:_Zp+6
+    \ 00a7 86..                 stx     zp:_Zp+7
+    \ 00a9 18                   clc
+    \ 00aa a5..                 lda     zp:_Zp+4
+    \ 00ac 65..                 adc     zp:_Zp
+    \ 00ae 85..                 sta     zp:_Zp+4
+    \ 00b0 a5..                 lda     zp:_Zp+5
+    \ 00b2 65..                 adc     zp:_Zp+1
+    \ 00b4 85..                 sta     zp:_Zp+5
+    \ 00b6 68                   pla
+    \ 00b7 a300                 ldz     #0
+    \ 00b9 ea92..               sta     [_Zp+4],z
+    \ 00bc e3..                 inw     zp:_Zp
+    \ 00be 80a3                 bra     `?L20`
+0245
+0246
+0247                void setchar(unsigned char __far  *charset_begin){
+    \ 0000                      .section code,text
+    \ 0000                      .public setchar
+    \ 0000 a2f6     setchar:    ldx     #246
+    \ 0002 a005                 ldy     #5
+    \ 0004 20....               jsr     _AllocStackSave
+0248                    char stringa [10];
+0249                    unsigned char __far *charset;
+0250                    charset = charset_begin;
+    \ 0007 4242a5..             ldq     zp:_Zp
+    \ 000b 424285..             stq     zp:_Zp+24
+0251                    //charset =  (attic_memory_charset);
+0252                  
+0253                    debug_msg("CHARSET SET");
+    \ 000f a9..                 lda     #.byte0 `_StringLiteral_CHARSET SET`
+    \ 0011 85..                 sta     zp:_Zp
+    \ 0013 a9..                 lda     #.byte1 `_StringLiteral_CHARSET SET`
+    \ 0015 85..                 sta     zp:_Zp+1
+    \ 0017 20....               jsr     debug_msg
+0254                  
+0255                    int num_char_definitions = (LEN_CHARSET);
+    \ 001a a900                 lda     #0
+    \ 001c 85..                 sta     zp:_Zp+28
+    \ 001e a940                 lda     #64
+    \ 0020 85..                 sta     zp:_Zp+29
+0256                    itoa(num_char_definitions, stringa+1,10);
+    \ 0022 a90a                 lda     #10
+    \ 0024 85..                 sta     zp:_Zp+4
+    \ 0026 a900                 lda     #0
+    \ 0028 85..                 sta     zp:_Zp+5
+    \ 002a a2..                 ldx     #_Zp+2
+    \ 002c a901                 lda     #1
+    \ 002e 20....               jsr     _LoadVspEA
+    \ 0031 a5..                 lda     zp:_Zp+28
+    \ 0033 85..                 sta     zp:_Zp
+    \ 0035 a5..                 lda     zp:_Zp+29
+    \ 0037 85..                 sta     zp:_Zp+1
+    \ 0039 20....               jsr     itoa
+0257                    stringa[0]='C';  
+    \ 003c a943                 lda     #67
+    \ 003e a000                 ldy     #0
+    \ 0040 91..                 sta     (_Vsp),y
+0258                    stringa[6]='\0';
+    \ 0042 a900                 lda     #0
+    \ 0044 a006                 ldy     #6
+    \ 0046 91..                 sta     (_Vsp),y
+0259                    debug_msg(stringa);
+    \ 0048 a5..                 lda     zp:_Vsp
+    \ 004a 85..                 sta     zp:_Zp
+    \ 004c a5..                 lda     zp:_Vsp+1
+    \ 004e 85..                 sta     zp:_Zp+1
+    \ 0050 20....               jsr     debug_msg
+0260                  
+0261                  
+0262                    for (int c = 0; c < num_char_definitions; c++) {
+    \ 0053 a900                 lda     #0
+    \ 0055 85..                 sta     zp:_Zp
+    \ 0057 a900                 lda     #0
+    \ 0059 85..                 sta     zp:_Zp+1
+    \ 005b          `?L27`:
+    \ 005b a5..                 lda     zp:_Zp
+    \ 005d c5..                 cmp     zp:_Zp+28
+    \ 005f a5..                 lda     zp:_Zp+1
+    \ 0061 e5..                 sbc     zp:_Zp+29
+    \ 0063 5002                 bvc     `?L70`
+    \ 0065 4980                 eor     #-128
+    \ 0067 3007     `?L70`:     bmi     `?L26`
+0263                        FAR_U8_PTR(CHARSET_MEMORY) [c] = charset[c];
+0264                    }
+0265
+0266                };
+    \ 0069 a20a                 ldx     #10
+    \ 006b a005                 ldy     #5
+    \ 006d 4c....               jmp     _DeallocStackRestore
+    \ 0070          `?L26`:
+    \ 0070 4242a5..             ldq     zp:_Zp+24
+    \ 0074 424285..             stq     zp:_Zp+4
+    \ 0078 18                   clc
+    \ 0079 a5..                 lda     zp:_Zp+4
+    \ 007b 65..                 adc     zp:_Zp
+    \ 007d 85..                 sta     zp:_Zp+4
+    \ 007f a5..                 lda     zp:_Zp+5
+    \ 0081 65..                 adc     zp:_Zp+1
+    \ 0083 85..                 sta     zp:_Zp+5
+    \ 0085 a300                 ldz     #0
+    \ 0087 eab2..               lda     [_Zp+4],z
+    \ 008a 48                   pha
+    \ 008b a900                 lda     #0
+    \ 008d a240                 ldx     #64
+    \ 008f a004                 ldy     #4
+    \ 0091 a300                 ldz     #0
+    \ 0093 424285..             stq     zp:_Zp+4
+    \ 0097 18                   clc
+    \ 0098 a5..                 lda     zp:_Zp+4
+    \ 009a 65..                 adc     zp:_Zp
+    \ 009c 85..                 sta     zp:_Zp+4
+    \ 009e a5..                 lda     zp:_Zp+5
+    \ 00a0 65..                 adc     zp:_Zp+1
+    \ 00a2 85..                 sta     zp:_Zp+5
+    \ 00a4 68                   pla
+    \ 00a5 a300                 ldz     #0
+    \ 00a7 ea92..               sta     [_Zp+4],z
+    \ 00aa e3..                 inw     zp:_Zp
+    \ 00ac 80ad                 bra     `?L27`
+0267
+0268                void setscreen(unsigned char __far  *screen_begin){
+    \ 0000                      .section code,text
+    \ 0000                      .public setscreen
+    \ 0000 a2f6     setscreen:  ldx     #246
+    \ 0002 a005                 ldy     #5
+    \ 0004 20....               jsr     _AllocStackSave
+0269                    char stringa [10];
+0270                    unsigned char __far *screen;
+0271                    screen = screen_begin;
+    \ 0007 4242a5..             ldq     zp:_Zp
+    \ 000b 424285..             stq     zp:_Zp+24
+0272                    debug_msg("SCREEN SET");
+    \ 000f a9..                 lda     #.byte0 `_StringLiteral_SCREEN SET`
+    \ 0011 85..                 sta     zp:_Zp
+    \ 0013 a9..                 lda     #.byte1 `_StringLiteral_SCREEN SET`
+    \ 0015 85..                 sta     zp:_Zp+1
+    \ 0017 20....               jsr     debug_msg
+0273                  
+0274                    // copy special characters
+0275                    int num_char_screen = (LEN_SCREEN);
+    \ 001a a9d0                 lda     #208
+    \ 001c 85..                 sta     zp:_Zp+28
+    \ 001e a907                 lda     #7
+    \ 0020 85..                 sta     zp:_Zp+29
+0276                    itoa(num_char_screen, stringa+1,10);
+    \ 0022 a90a                 lda     #10
+    \ 0024 85..                 sta     zp:_Zp+4
+    \ 0026 a900                 lda     #0
+    \ 0028 85..                 sta     zp:_Zp+5
+    \ 002a a2..                 ldx     #_Zp+2
+    \ 002c a901                 lda     #1
+    \ 002e 20....               jsr     _LoadVspEA
+    \ 0031 a5..                 lda     zp:_Zp+28
+    \ 0033 85..                 sta     zp:_Zp
+    \ 0035 a5..                 lda     zp:_Zp+29
+    \ 0037 85..                 sta     zp:_Zp+1
+    \ 0039 20....               jsr     itoa
+0277                    stringa[0]='S';  
+    \ 003c a953                 lda     #83
+    \ 003e a000                 ldy     #0
+    \ 0040 91..                 sta     (_Vsp),y
+0278                    stringa[6]='\0';
+    \ 0042 a900                 lda     #0
+    \ 0044 a006                 ldy     #6
+    \ 0046 91..                 sta     (_Vsp),y
+0279                    debug_msg(stringa);
+    \ 0048 a5..                 lda     zp:_Vsp
+    \ 004a 85..                 sta     zp:_Zp
+    \ 004c a5..                 lda     zp:_Vsp+1
+    \ 004e 85..                 sta     zp:_Zp+1
+    \ 0050 20....               jsr     debug_msg
+0280                  
+0281                    itoa(((CHARSET_MEMORY / 64) >> 8),stringa+1,10);
+    \ 0053 a90a                 lda     #10
+    \ 0055 85..                 sta     zp:_Zp+6
+    \ 0057 a900                 lda     #0
+    \ 0059 85..                 sta     zp:_Zp+7
+    \ 005b a2..                 ldx     #_Zp+4
+    \ 005d a901                 lda     #1
+    \ 005f 20....               jsr     _LoadVspEA
+    \ 0062 a911                 lda     #17
+    \ 0064 a200                 ldx     #0
+    \ 0066 a000                 ldy     #0
+    \ 0068 a300                 ldz     #0
+    \ 006a 424285..             stq     zp:_Zp
+    \ 006e 20....               jsr     itoa
+0282                    stringa[0]='T';  
+    \ 0071 a954                 lda     #84
+    \ 0073 a000                 ldy     #0
+    \ 0075 91..                 sta     (_Vsp),y
+0283                    stringa[6]='\0';
+    \ 0077 a900                 lda     #0
+    \ 0079 a006                 ldy     #6
+    \ 007b 91..                 sta     (_Vsp),y
+0284                    debug_msg(stringa);
+    \ 007d a5..                 lda     zp:_Vsp
+    \ 007f 85..                 sta     zp:_Zp
+    \ 0081 a5..                 lda     zp:_Vsp+1
+    \ 0083 85..                 sta     zp:_Zp+1
+    \ 0085 20....               jsr     debug_msg
+0285                  
+0286                    
+0287                    for (int c = 0; c < num_char_screen; c=c+2) {
+    \ 0088 a900                 lda     #0
+    \ 008a 85..                 sta     zp:_Zp
+    \ 008c a900                 lda     #0
+    \ 008e 85..                 sta     zp:_Zp+1
+    \ 0090          `?L34`:
+    \ 0090 a5..                 lda     zp:_Zp
+    \ 0092 c5..                 cmp     zp:_Zp+28
+    \ 0094 a5..                 lda     zp:_Zp+1
+    \ 0096 e5..                 sbc     zp:_Zp+29
+    \ 0098 5002                 bvc     `?L80`
+    \ 009a 4980                 eor     #-128
+    \ 009c 3007     `?L80`:     bmi     `?L33`
+0288                        FAR_U8_PTR(SCREEN_MAP) [c] = screen[c];
+0289                        FAR_U8_PTR(SCREEN_MAP) [c+1] = ((CHARSET_MEMORY / 64) >> 8);
+0290                        //debug_char(screen[c]);
+0291                    }
+0292                };
+    \ 009e a20a                 ldx     #10
+    \ 00a0 a005                 ldy     #5
+    \ 00a2 4c....               jmp     _DeallocStackRestore
+    \ 00a5          `?L33`:
+    \ 00a5 4242a5..             ldq     zp:_Zp+24
+    \ 00a9 424285..             stq     zp:_Zp+4
+    \ 00ad 18                   clc
+    \ 00ae a5..                 lda     zp:_Zp+4
+    \ 00b0 65..                 adc     zp:_Zp
+    \ 00b2 85..                 sta     zp:_Zp+4
+    \ 00b4 a5..                 lda     zp:_Zp+5
+    \ 00b6 65..                 adc     zp:_Zp+1
+    \ 00b8 85..                 sta     zp:_Zp+5
+    \ 00ba a300                 ldz     #0
+    \ 00bc eab2..               lda     [_Zp+4],z
+    \ 00bf 48                   pha
+    \ 00c0 a900                 lda     #0
+    \ 00c2 a200                 ldx     #0
+    \ 00c4 a005                 ldy     #5
+    \ 00c6 a300                 ldz     #0
+    \ 00c8 424285..             stq     zp:_Zp+4
+    \ 00cc 18                   clc
+    \ 00cd a5..                 lda     zp:_Zp+4
+    \ 00cf 65..                 adc     zp:_Zp
+    \ 00d1 85..                 sta     zp:_Zp+4
+    \ 00d3 a5..                 lda     zp:_Zp+5
+    \ 00d5 65..                 adc     zp:_Zp+1
+    \ 00d7 85..                 sta     zp:_Zp+5
+    \ 00d9 68                   pla
+    \ 00da a300                 ldz     #0
+    \ 00dc ea92..               sta     [_Zp+4],z
+    \ 00df a900                 lda     #0
+    \ 00e1 a200                 ldx     #0
+    \ 00e3 a005                 ldy     #5
+    \ 00e5 a300                 ldz     #0
+    \ 00e7 424285..             stq     zp:_Zp+4
+    \ 00eb a5..                 lda     zp:_Zp
+    \ 00ed 85..                 sta     zp:_Zp+2
+    \ 00ef a5..                 lda     zp:_Zp+1
+    \ 00f1 85..                 sta     zp:_Zp+3
+    \ 00f3 e3..                 inw     zp:_Zp+2
+    \ 00f5 18                   clc
+    \ 00f6 a5..                 lda     zp:_Zp+4
+    \ 00f8 65..                 adc     zp:_Zp+2
+    \ 00fa 85..                 sta     zp:_Zp+4
+    \ 00fc a5..                 lda     zp:_Zp+5
+    \ 00fe 65..                 adc     zp:_Zp+3
+    \ 0100 85..                 sta     zp:_Zp+5
+    \ 0102 a911                 lda     #17
+    \ 0104 a300                 ldz     #0
+    \ 0106 ea92..               sta     [_Zp+4],z
+    \ 0109 e3..                 inw     zp:_Zp
+    \ 010b e3..                 inw     zp:_Zp
+    \ 010d 8081                 bra     `?L34`
+0293
+0294                void colorset_init(void)
+0295                {
+    \ 0000                      .section code,text
+    \ 0000                      .public colorset_init
+    \ 0000          colorset_init:
+    \ 0000 a2f6                 ldx     #246
+    \ 0002 a001                 ldy     #1
+    \ 0004 20....               jsr     _AllocStackSave
+0296                  char stringa [10];
+0297                  //char *color;
+0298                  //color = (char *) &charcolor_begin;
+0299                  debug_msg("COLOR SET");
+    \ 0007 a9..                 lda     #.byte0 `_StringLiteral_COLOR SET`
+    \ 0009 85..                 sta     zp:_Zp
+    \ 000b a9..                 lda     #.byte1 `_StringLiteral_COLOR SET`
+    \ 000d 85..                 sta     zp:_Zp+1
+    \ 000f 20....               jsr     debug_msg
+0300
+0301                  // copy special characters
+0302                  int num_color = 2000;
+    \ 0012 a9d0                 lda     #208
+    \ 0014 85..                 sta     zp:_Zp+24
+    \ 0016 a907                 lda     #7
+    \ 0018 85..                 sta     zp:_Zp+25
+0303
+0304                  itoa(num_color, stringa+1,10);
+    \ 001a a90a                 lda     #10
+    \ 001c 85..                 sta     zp:_Zp+4
+    \ 001e a900                 lda     #0
+    \ 0020 85..                 sta     zp:_Zp+5
+    \ 0022 a2..                 ldx     #_Zp+2
+    \ 0024 a901                 lda     #1
+    \ 0026 20....               jsr     _LoadVspEA
+    \ 0029 a5..                 lda     zp:_Zp+24
+    \ 002b 85..                 sta     zp:_Zp
+    \ 002d a5..                 lda     zp:_Zp+25
+    \ 002f 85..                 sta     zp:_Zp+1
+    \ 0031 20....               jsr     itoa
+0305                  stringa[0]='O';  
+    \ 0034 a94f                 lda     #79
+    \ 0036 a000                 ldy     #0
+    \ 0038 91..                 sta     (_Vsp),y
+0306                  stringa[6]='\0';
+    \ 003a a900                 lda     #0
+    \ 003c a006                 ldy     #6
+    \ 003e 91..                 sta     (_Vsp),y
+0307                  debug_msg(stringa);
+    \ 0040 a5..                 lda     zp:_Vsp
+    \ 0042 85..                 sta     zp:_Zp
+    \ 0044 a5..                 lda     zp:_Vsp+1
+    \ 0046 85..                 sta     zp:_Zp+1
+    \ 0048 20....               jsr     debug_msg
+0308
+0309                  // il primo byte è zero e il secondo contiene un colore
+0310                  // non so se venga utilizzato perché sembra sempre uguale
+0311                  // da verificare come funziona perché non ho capito
+0312                  for (int c = 0; c < num_color; c=c+2) {
+    \ 004b a900                 lda     #0
+    \ 004d 85..                 sta     zp:_Zp
+    \ 004f a900                 lda     #0
+    \ 0051 85..                 sta     zp:_Zp+1
+    \ 0053          `?L41`:
+    \ 0053 a5..                 lda     zp:_Zp
+    \ 0055 c5..                 cmp     zp:_Zp+24
+    \ 0057 a5..                 lda     zp:_Zp+1
+    \ 0059 e5..                 sbc     zp:_Zp+25
+    \ 005b 5002                 bvc     `?L87`
+    \ 005d 4980                 eor     #-128
+    \ 005f 3007     `?L87`:     bmi     `?L40`
+0313                    FAR_U8_PTR(0xff80000) [c] = 0;
+0314                    FAR_U8_PTR(0xff80000) [c+1] = 10;
+0315                  }
+0316                }
+    \ 0061 a20a                 ldx     #10
+    \ 0063 a001                 ldy     #1
+    \ 0065 4c....               jmp     _DeallocStackRestore
+    \ 0068 a900     `?L40`:     lda     #0
+    \ 006a a200                 ldx     #0
+    \ 006c a0f8                 ldy     #248
+    \ 006e a30f                 ldz     #15
+    \ 0070 424285..             stq     zp:_Zp+4
+    \ 0074 18                   clc
+    \ 0075 a5..                 lda     zp:_Zp+4
+    \ 0077 65..                 adc     zp:_Zp
+    \ 0079 85..                 sta     zp:_Zp+4
+    \ 007b a5..                 lda     zp:_Zp+5
+    \ 007d 65..                 adc     zp:_Zp+1
+    \ 007f 85..                 sta     zp:_Zp+5
+    \ 0081 a900                 lda     #0
+    \ 0083 a300                 ldz     #0
+    \ 0085 ea92..               sta     [_Zp+4],z
+    \ 0088 a900                 lda     #0
+    \ 008a a200                 ldx     #0
+    \ 008c a0f8                 ldy     #248
+    \ 008e a30f                 ldz     #15
+    \ 0090 424285..             stq     zp:_Zp+4
+    \ 0094 a5..                 lda     zp:_Zp
+    \ 0096 85..                 sta     zp:_Zp+2
+    \ 0098 a5..                 lda     zp:_Zp+1
+    \ 009a 85..                 sta     zp:_Zp+3
+    \ 009c e3..                 inw     zp:_Zp+2
+    \ 009e 18                   clc
+    \ 009f a5..                 lda     zp:_Zp+4
+    \ 00a1 65..                 adc     zp:_Zp+2
+    \ 00a3 85..                 sta     zp:_Zp+4
+    \ 00a5 a5..                 lda     zp:_Zp+5
+    \ 00a7 65..                 adc     zp:_Zp+3
+    \ 00a9 85..                 sta     zp:_Zp+5
+    \ 00ab a90a                 lda     #10
+    \ 00ad a300                 ldz     #0
+    \ 00af ea92..               sta     [_Zp+4],z
+    \ 00b2 e3..                 inw     zp:_Zp
+    \ 00b4 e3..                 inw     zp:_Zp
+    \ 00b6 809b                 bra     `?L41`
     \ 0000                      .section data,data
     \ 0000                      .public attic_memory_charset
     \ 0000          attic_memory_charset:
@@ -153,6 +1040,39 @@
     \ 0000                      .public spritefile
     \ 0000 53505249 spritefile: .byte   83,80,82,73,84,69,0
     \ 0004 544500
+    \ 0000                      .section zdata,bss
+    \ 0000                      .public SPRITE_PTRS
+    \ 0000                      .align  16
+    \ 0000          SPRITE_PTRS:
+    \ 0000                      .space  16
+    \ 0000                      .section zdata,bss
+    \ 0000                      .public SPRITE_SPACE
+    \ 0000                      .align  64
+    \ 0000          SPRITE_SPACE:
+    \ 0000                      .space  0x2d0
+    \ 0000                      .section cdata,rodata
+    \ 0000                      .pubweak `_StringLiteral_CHARSET SET`
+    \ 0000          `_StringLiteral_CHARSET SET`:
+    \ 0000 43484152             .byte   67,72,65,82,83,69,84,32,83,69,84,0
+    \ 0004 53455420
+    \ 0008 53455400
+    \ 0000                      .section cdata,rodata
+    \ 0000                      .pubweak `_StringLiteral_COLOR SET`
+    \ 0000          `_StringLiteral_COLOR SET`:
+    \ 0000 434f4c4f             .byte   67,79,76,79,82,32,83,69,84,0
+    \ 0004 52205345
+    \ 0008 5400
+    \ 0000                      .section cdata,rodata
+    \ 0000                      .pubweak `_StringLiteral_SCREEN SET`
+    \ 0000          `_StringLiteral_SCREEN SET`:
+    \ 0000 53435245             .byte   83,67,82,69,69,78,32,83,69,84,0
+    \ 0004 454e2053
+    \ 0008 455400
+    \ 0000                      .section cdata,rodata
+    \ 0000                      .pubweak _StringLiteral_SPRITE
+    \ 0000          _StringLiteral_SPRITE:
+    \ 0000 53505249             .byte   83,80,82,73,84,69,0
+    \ 0004 544500
 
 ##########################
 #                        #
@@ -160,5 +1080,7 @@
 #                        #
 ##########################
 
-Executable  (Text): 95 bytes
-Data              : 36 bytes
+Executable        (Text): 1402 bytes
+Zero initialized   (BSS):  736 bytes
+Data                    :   36 bytes
+Constant                :   40 bytes

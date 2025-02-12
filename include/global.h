@@ -21,7 +21,7 @@
 /// memoria riservata per i caratteri jobond 20/11/2024
 #define CHARSET_MEMORY 0x44000
 /// memoria riservata per gli sprite jobond 20/11/2024
-#define SPRITE_RAM  0x5a000   //  Sprite RAM
+//#define SPRITE_RAM  0x5a000   //  Sprite RAM
 /// \brief	A pointer to where the title screen's tile map is stored
 #define SCREEN_MAP        0x0050000//0x0059400
 /// \brief	A pointer to where the title screen's attribute map is stored

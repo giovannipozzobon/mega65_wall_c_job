@@ -3,10 +3,15 @@
             (section 
                 (programStart #x2001) 
                 (startup #x200e)
+                (diskio_copy #x6000)
             )
             )
-    (memory zeroPage (address (#x2 . #x7f)) (type ram) (qualifier zpage)
-        (section (registers #x2)))
-    (memory stackPage (address (#x100 . #x1ff)) (type ram))
-
+        (memory zeropage (address (#x2 . #xff))  (qualifier zpage)
+	        (section (registers (#x2. #x7f)))
+                (section zzpage)
+        )
+    
+        (memory stackpage (address (#x100 . #x1ff)) 
+                (section stack)
+        )
     ))
