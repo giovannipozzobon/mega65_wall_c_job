@@ -17,7 +17,7 @@
 #define TITLE_LINE_LENGTH     80
 #define TITLE_LINE_COUNT      24
 
-#define DELAY_JOY 10
+#define DELAY_JOY 2
 
 /// memoria riservata per i caratteri jobond 20/11/2024
 #define CHARSET_MEMORY 0x44000

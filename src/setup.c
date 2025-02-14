@@ -2,8 +2,11 @@
 #include "chips.h"
 #include "global.h"
 #include "setup.h"
+#include <sprite.h>
 
 __attribute__((aligned(64))) unsigned int SPRITE_SPACE[360];
+
+extern struct _SPRITE sprite[8];
 
 void initial_setup(void){
 	__disable_interrupts();
@@ -216,6 +219,12 @@ void sprite_setup(void){
 	
 	// Sprite 1 color 
 	VIC2.SPR1COL = 0x00;
+
+	// Sprite 0
+	create_sprite(&sprite[0], 0x20, 0x20,0,0b11111110,0b00000001);
+
+	// Sprite 1
+	create_sprite(&sprite[1], 0x80, 0x80,1,0b11111101,0b00000010);
   
   }
   

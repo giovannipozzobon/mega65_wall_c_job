@@ -9,11 +9,14 @@
 #include <setup.h>
 #include <input.h>
 #include <func_job.h>
-
+#include <sprite.h>
 
 #define DEBUG
 
+
 #pragma require __preserve_zp
+
+struct _SPRITE sprite[8]; 
 
 struct map_t __attribute__((zpage)) map_regs;
 struct m65_dirent __attribute__((zpage)) *m65_dirent_exchange;
@@ -53,7 +56,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY LEFT FIRE");
         #endif
-
+        movesprite(&sprite[0],-1,-1);
+        drawsprite(&sprite[0]);
         return;
     }
 
@@ -63,7 +67,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY RIGTH FIRE");
         #endif
-
+        movesprite(&sprite[0],1,-1);
+        drawsprite(&sprite[0]);
         return;
     }
 
@@ -73,7 +78,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY LEFT");
         #endif
-
+        movesprite(&sprite[0],-1,0);
+        drawsprite(&sprite[0]);
         return;
     }
     // right?
@@ -82,7 +88,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY RIGTH");
         #endif
-
+        movesprite(&sprite[0],1,0);
+        drawsprite(&sprite[0]);
         return;
     }
     // up?
@@ -91,7 +98,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY UP");
         #endif
-
+        movesprite(&sprite[0],0,-1);
+        drawsprite(&sprite[0]);
         return;
     }
     // down?
@@ -100,7 +108,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY DOWN");
         #endif
-
+        movesprite(&sprite[0],0,1);
+        drawsprite(&sprite[0]);
         return;
     }
     // fire?

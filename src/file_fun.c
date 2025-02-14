@@ -61,6 +61,6 @@ void loadfile(char * filename){
         debug_msg(" LOAD ERROR");
       };
     
-  
+      free (file);
   }
   

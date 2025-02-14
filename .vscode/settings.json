@@ -3,6 +3,7 @@
         "editor.rulers": []
     },
     "files.associations": {
-        "chips.h": "c"
+        "chips.h": "c",
+        "sprite.h": "c"
     }
 }
