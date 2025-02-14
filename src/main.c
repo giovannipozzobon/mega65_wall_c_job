@@ -13,7 +13,7 @@
 
 #define DEBUG
 
-//#pragma require __preserve_zp
+#pragma require __preserve_zp
 
 struct map_t __attribute__((zpage)) map_regs;
 struct m65_dirent __attribute__((zpage)) *m65_dirent_exchange;
@@ -33,7 +33,10 @@ void main(void) {
 
     setup_resource();
 
-    gameloop();
+    while(1) {
+        wait_very_briefly(DELAY_JOY);
+        gameloop();
+    }
 
     return;
 
@@ -41,25 +44,76 @@ void main(void) {
 
 void gameloop(void) {
 
-    while(1) {
-        
-       wait_very_briefly(DELAY_JOY);
+       
+    process_input();
 
-        process_input();
-        // do other stuff
-        // left?
-		if (player_input & 0b00000100)  {   
-            // move left
-            debug_msg("JOY LEFT");
-        }
-        // right?
-        if (player_input & 0b00001000) {
-            // move right
-            debug_msg("JOY RIGTH");
-        }
+    // left fire?
+    if (player_input == 0b00010100)  {   
+        // move left fire
+        #ifdef DEBUG
+        debug_msg("JOY LEFT FIRE");
+        #endif
 
-
+        return;
     }
+
+    // rigth fire?
+    if (player_input == 0b00011000)  {   
+        // move rigth fire
+        #ifdef DEBUG
+        debug_msg("JOY RIGTH FIRE");
+        #endif
+
+        return;
+    }
+
+    // left?
+    if (player_input == 0b00000100)  {   
+        // move left
+        #ifdef DEBUG
+        debug_msg("JOY LEFT");
+        #endif
+
+        return;
+    }
+    // right?
+    if (player_input == 0b00001000) {
+        // move right
+        #ifdef DEBUG
+        debug_msg("JOY RIGTH");
+        #endif
+
+        return;
+    }
+    // up?
+    if (player_input == 0b00000001) {
+        // move up
+        #ifdef DEBUG
+        debug_msg("JOY UP");
+        #endif
+
+        return;
+    }
+    // down?
+    if (player_input == 0b00000010) {
+        // move down
+        #ifdef DEBUG
+        debug_msg("JOY DOWN");
+        #endif
+
+        return;
+    }
+    // fire?
+    if (player_input == 0b00010000) {
+        // fire
+        #ifdef DEBUG
+        debug_msg("JOY FIRE ");
+        #endif
+
+        return;
+    }       
+
+    return;
 }
 
 void loadresource(void) {
