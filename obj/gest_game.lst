@@ -1,0 +1,218 @@
+###############################################################################
+#                                                                             #
+# Calypsi ISO C compiler for 6502                               version 5.8.1 #
+#                                                       16/Feb/2025  19:09:06 #
+# Command line: --target=mega65 --core 45gs02 --no-cross-call -I ./include    #
+#               --list-file=obj/gest_game.lst -o obj/gest_game.o              #
+#               src/gest_game.c                                               #
+#                                                                             #
+###############################################################################
+
+    \ 0000                      .rtmodel version,"1"
+    \ 0000                      .rtmodel codeModel,"plain"
+    \ 0000                      .rtmodel core,"45gs02"
+    \ 0000                      .rtmodel target,"mega65"
+    \ 0000                      .extern _AllocStackSave
+    \ 0000                      .extern _DeallocStackRestore
+    \ 0000                      .extern _FillZP
+    \ 0000                      .extern _LoadVspEA
+    \ 0000                      .extern _Mul16
+    \ 0000                      .extern _SpillZP
+    \ 0000                      .extern _Vfp
+    \ 0000                      .extern _Vsp
+    \ 0000                      .extern _Zp
+    \ 0000                      .extern debug_msg
+    \ 0000                      .extern itoa
+0001                #include <mega65/debug_calypis.h>
+0002                #include <calypsi/intrinsics6502.h>
+0003                #include <gest_game.h>
+0004                #include <global.h>
+0005                #include "chips.h"
+0006
+0007
+0008                #define DEBUG
+0009
+0010                unsigned char read_char(int x, int y){
+    \ 0000                      .section code,text
+    \ 0000                      .public read_char
+    \ 0000 a2f6     read_char:  ldx     #246
+    \ 0002 a000                 ldy     #0
+    \ 0004 20....               jsr     _AllocStackSave
+    \ 0007 a5..                 lda     zp:_Zp
+    \ 0009 85..                 sta     zp:_Zp+10
+    \ 000b a5..                 lda     zp:_Zp+1
+    \ 000d 85..                 sta     zp:_Zp+11
+    \ 000f a5..                 lda     zp:_Zp+2
+    \ 0011 85..                 sta     zp:_Zp+6
+    \ 0013 a5..                 lda     zp:_Zp+3
+    \ 0015 85..                 sta     zp:_Zp+7
+0011                    char stringa [10];
+0012                    unsigned char c;
+0013
+0014                    c = FAR_U8_PTR(SCREEN_MAP) [y*80+x*2]; // ogni riga è di 80 caratteri e ogni carattere è di 2 byte
+    \ 0017 a900                 lda     #0
+    \ 0019 a200                 ldx     #0
+    \ 001b a005                 ldy     #5
+    \ 001d a300                 ldz     #0
+    \ 001f 424285..             stq     zp:_Zp+12
+    \ 0023 a5..                 lda     zp:_Zp+6
+    \ 0025 85..                 sta     zp:_Zp+2
+    \ 0027 a5..                 lda     zp:_Zp+7
+    \ 0029 85..                 sta     zp:_Zp+3
+    \ 002b a950                 lda     #80
+    \ 002d 85..                 sta     zp:_Zp
+    \ 002f a900                 lda     #0
+    \ 0031 85..                 sta     zp:_Zp+1
+    \ 0033 20....               jsr     _Mul16
+    \ 0036 a5..                 lda     zp:_Zp+10
+    \ 0038 85..                 sta     zp:_Zp+2
+    \ 003a a5..                 lda     zp:_Zp+11
+    \ 003c 85..                 sta     zp:_Zp+3
+    \ 003e cb....               asw     _Zp+2
+    \ 0041 18                   clc
+    \ 0042 a5..                 lda     zp:_Zp+2
+    \ 0044 65..                 adc     zp:_Zp
+    \ 0046 85..                 sta     zp:_Zp
+    \ 0048 a5..                 lda     zp:_Zp+3
+    \ 004a 65..                 adc     zp:_Zp+1
+    \ 004c 85..                 sta     zp:_Zp+1
+    \ 004e 18                   clc
+    \ 004f a5..                 lda     zp:_Zp+12
+    \ 0051 65..                 adc     zp:_Zp
+    \ 0053 85..                 sta     zp:_Zp+12
+    \ 0055 a5..                 lda     zp:_Zp+13
+    \ 0057 65..                 adc     zp:_Zp+1
+    \ 0059 85..                 sta     zp:_Zp+13
+    \ 005b a300                 ldz     #0
+    \ 005d eab2..               lda     [_Zp+12],z
+    \ 0060 85..                 sta     zp:_Zp+24
+0015
+0016                    #ifdef DEBUG
+0017                    itoa((int) ((y*80)+x), stringa+2,10);
+    \ 0062 a90a                 lda     #10
+    \ 0064 85..                 sta     zp:_Zp+4
+    \ 0066 a900                 lda     #0
+    \ 0068 85..                 sta     zp:_Zp+5
+    \ 006a a2..                 ldx     #_Zp+2
+    \ 006c a902                 lda     #2
+    \ 006e 20....               jsr     _LoadVspEA
+    \ 0071 20....               jsr     _SpillZP
+    \ 0074 02..                 .byte   2,_Zp+2
+    \ 0076 a5..                 lda     zp:_Zp+6
+    \ 0078 85..                 sta     zp:_Zp+2
+    \ 007a a5..                 lda     zp:_Zp+7
+    \ 007c 85..                 sta     zp:_Zp+3
+    \ 007e a950                 lda     #80
+    \ 0080 85..                 sta     zp:_Zp
+    \ 0082 a900                 lda     #0
+    \ 0084 85..                 sta     zp:_Zp+1
+    \ 0086 20....               jsr     _Mul16
+    \ 0089 18                   clc
+    \ 008a a5..                 lda     zp:_Zp+10
+    \ 008c 65..                 adc     zp:_Zp
+    \ 008e 85..                 sta     zp:_Zp
+    \ 0090 a5..                 lda     zp:_Zp+11
+    \ 0092 65..                 adc     zp:_Zp+1
+    \ 0094 85..                 sta     zp:_Zp+1
+    \ 0096 20....               jsr     _FillZP
+    \ 0099 02..                 .byte   2,_Zp+2
+    \ 009b 20....               jsr     itoa
+0018                    stringa[0]='A';  
+    \ 009e a941                 lda     #65
+    \ 00a0 a000                 ldy     #0
+    \ 00a2 91..                 sta     (_Vsp),y
+0019                    stringa[1]=':';  
+    \ 00a4 a93a                 lda     #58
+    \ 00a6 a001                 ldy     #1
+    \ 00a8 91..                 sta     (_Vsp),y
+0020                    stringa[8]='\0';
+    \ 00aa a900                 lda     #0
+    \ 00ac a008                 ldy     #8
+    \ 00ae 91..                 sta     (_Vsp),y
+0021                    debug_msg(stringa);
+    \ 00b0 a5..                 lda     zp:_Vsp
+    \ 00b2 85..                 sta     zp:_Zp
+    \ 00b4 a5..                 lda     zp:_Vsp+1
+    \ 00b6 85..                 sta     zp:_Zp+1
+    \ 00b8 20....               jsr     debug_msg
+0022
+0023                   
+0024                    itoa((int) c, stringa+2,10);
+    \ 00bb a90a                 lda     #10
+    \ 00bd 85..                 sta     zp:_Zp+4
+    \ 00bf a900                 lda     #0
+    \ 00c1 85..                 sta     zp:_Zp+5
+    \ 00c3 a2..                 ldx     #_Zp+2
+    \ 00c5 a902                 lda     #2
+    \ 00c7 20....               jsr     _LoadVspEA
+    \ 00ca a6..                 ldx     zp:_Zp+24
+    \ 00cc 86..                 stx     zp:_Zp
+    \ 00ce a900                 lda     #0
+    \ 00d0 85..                 sta     zp:_Zp+1
+    \ 00d2 20....               jsr     itoa
+0025                    stringa[0]='C';  
+    \ 00d5 a943                 lda     #67
+    \ 00d7 a000                 ldy     #0
+    \ 00d9 91..                 sta     (_Vsp),y
+0026                    stringa[1]=':';  
+    \ 00db a93a                 lda     #58
+    \ 00dd a001                 ldy     #1
+    \ 00df 91..                 sta     (_Vsp),y
+0027                    stringa[6]='\0';
+    \ 00e1 a900                 lda     #0
+    \ 00e3 a006                 ldy     #6
+    \ 00e5 91..                 sta     (_Vsp),y
+0028                    debug_msg(stringa);
+    \ 00e7 a5..                 lda     zp:_Vsp
+    \ 00e9 85..                 sta     zp:_Zp
+    \ 00eb a5..                 lda     zp:_Vsp+1
+    \ 00ed 85..                 sta     zp:_Zp+1
+    \ 00ef 20....               jsr     debug_msg
+0029                    
+0030                    #endif
+0031
+0032                    return c;
+    \ 00f2 a5..                 lda     zp:_Zp+24
+0033
+0034                }
+    \ 00f4 a20a                 ldx     #10
+    \ 00f6 a000                 ldy     #0
+    \ 00f8 4c....               jmp     _DeallocStackRestore
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_charset
+    \ 0000          attic_memory_charset:
+    \ 0000 00450108             .long   0x8014500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_sprite
+    \ 0000          attic_memory_sprite:
+    \ 0000 00450208             .long   0x8024500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_screen
+    \ 0000          attic_memory_screen:
+    \ 0000 00450308             .long   0x8034500
+    \ 0000                      .section data,data
+    \ 0000                      .public attic_memory_attr
+    \ 0000          attic_memory_attr:
+    \ 0000 00450408             .long   0x8044500
+    \ 0000                      .section data,data
+    \ 0000                      .public charfile
+    \ 0000 43484152 charfile:   .byte   67,72,65,82,83,0
+    \ 0004 5300
+    \ 0000                      .section data,data
+    \ 0000                      .public screenfile
+    \ 0000 53435245 screenfile: .byte   83,67,82,69,69,78,0
+    \ 0004 454e00
+    \ 0000                      .section data,data
+    \ 0000                      .public spritefile
+    \ 0000 53505249 spritefile: .byte   83,80,82,73,84,69,0
+    \ 0004 544500
+0035
+
+##########################
+#                        #
+# Memory sizes (decimal) #
+#                        #
+##########################
+
+Executable  (Text): 251 bytes
+Data              :  36 bytes

@@ -78,7 +78,9 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY LEFT");
         #endif
-        movesprite(&sprite[0],-1,0);
+
+        //movesprite(&sprite[0],-1,0);
+        movesprite_left(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }
@@ -88,7 +90,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY RIGTH");
         #endif
-        movesprite(&sprite[0],1,0);
+        //movesprite(&sprite[0],1,0);
+        movesprite_rigth(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }
@@ -98,7 +101,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY UP");
         #endif
-        movesprite(&sprite[0],0,-1);
+        //movesprite(&sprite[0],0,-1);
+        movesprite_up(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }
@@ -108,7 +112,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY DOWN");
         #endif
-        movesprite(&sprite[0],0,1);
+        //movesprite(&sprite[0],0,1);
+        movesprite_down(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }

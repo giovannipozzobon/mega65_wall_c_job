@@ -7,9 +7,26 @@
 #define FAR_U16_PTR(X) ((uint16_t __far *)(X))
 #define FAR_I16_PTR(X) ((int16_t __far *)(X))
 
+//generic constants
+#define TRUE 1
+#define FALSE 0
+
+// directions of sprites
+#define LEFT 1
+#define RIGTH 2
+#define DOWN 3
+#define UP 4
+
+// types of chars of the screen
+#define WALL 1
+#define SPACE 0x20
+#define LADDER 4
+#define KEYS 2
+#define DOORS 3
 
 #define ATTIC_MEM 0x88
 
+//screen costants
 #define LEN_CHARSET 16384
 #define LEN_SCREEN  2000
 #define LEN_SPRITE  360
@@ -17,6 +34,7 @@
 #define TITLE_LINE_LENGTH     80
 #define TITLE_LINE_COUNT      24
 
+// sprite delay for movement
 #define DELAY_JOY 2
 
 /// memoria riservata per i caratteri jobond 20/11/2024

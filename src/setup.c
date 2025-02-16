@@ -145,8 +145,6 @@ void set_480() {
 }
 
 void sprite_setup(void){
-
-	char stringa [10];
   
 	char *sprite_ptr;
 	//sprite_ptr = (char *) (SPRITE_RAM);
@@ -160,20 +158,23 @@ void sprite_setup(void){
 	SPRITE_PTRS[1] = ((((int)sprite_ptr)+24*8) >> 6);
   
   
+	#ifdef DEBUG
+	char stringa [10];
 	itoa((int)sprite_ptr, stringa+1,10);
 	stringa[0]='S';  
 	stringa[6]='\0';
-	//debug_msg(stringa);
+	debug_msg(stringa);
   
 	itoa(SPRITE_PTRS[0], stringa+1,10);
 	stringa[0]='S';  
 	stringa[6]='\0';
-	//debug_msg(stringa);
+	debug_msg(stringa);
   
 	itoa((unsigned int)SPRITE_PTRS, stringa+1,10);
 	stringa[0]='S';  
 	stringa[6]='\0';
-	//debug_msg(stringa);
+	debug_msg(stringa);
+	#endif
   
 	// set location of 16 bit sprite pointers 
 	VIC4.SPRPTRADR = (unsigned int)SPRITE_PTRS;
@@ -231,18 +232,20 @@ void sprite_setup(void){
 
 void setsprite(unsigned char __far  *sprite_begin){
 
-    char stringa [10];
     char *sprite;
     sprite = (char *) (sprite_begin);
   
-    debug_msg("SPRITE");
   
     int len_sprite_definitions = LEN_SPRITE;
-    itoa(len_sprite_definitions, stringa+1,10);
+
+	#ifdef DEBUG
+	debug_msg("SPRITE");
+	char stringa [10];
+	itoa(len_sprite_definitions, stringa+1,10);
     stringa[0]='C';  
     stringa[6]='\0';
     debug_msg(stringa);
-  
+  	#endif
   
     for (int c = 0; c < len_sprite_definitions; c++) {
         //FAR_U8_PTR(SPRITE_RAM) [c] = sprite_begin[c]; 
@@ -254,18 +257,22 @@ void setsprite(unsigned char __far  *sprite_begin){
 
 
 void setchar(unsigned char __far  *charset_begin){
-    char stringa [10];
+
     unsigned char __far *charset;
     charset = charset_begin;
     //charset =  (attic_memory_charset);
-  
+
+	int num_char_definitions = (LEN_CHARSET);
+	
+	#ifdef DEBUG
+	char stringa [10];
     debug_msg("CHARSET SET");
   
-    int num_char_definitions = (LEN_CHARSET);
     itoa(num_char_definitions, stringa+1,10);
     stringa[0]='C';  
     stringa[6]='\0';
     debug_msg(stringa);
+	#endif
   
   
     for (int c = 0; c < num_char_definitions; c++) {
@@ -282,7 +289,16 @@ void setscreen(unsigned char __far  *screen_begin){
   
     // copy special characters
     int num_char_screen = (LEN_SCREEN);
-    itoa(num_char_screen, stringa+1,10);
+    
+	#ifdef DEBUG
+	char stringa [10];
+
+	itoa(num_char_screen, stringa+1,10);
+	stringa[0]='S';  
+	stringa[6]='\0';
+	debug_msg(stringa);
+
+	itoa(num_char_screen, stringa+1,10);
     stringa[0]='S';  
     stringa[6]='\0';
     debug_msg(stringa);
@@ -291,6 +307,7 @@ void setscreen(unsigned char __far  *screen_begin){
     stringa[0]='T';  
     stringa[6]='\0';
     debug_msg(stringa);
+	#endif
   
     
     for (int c = 0; c < num_char_screen; c=c+2) {
@@ -302,18 +319,22 @@ void setscreen(unsigned char __far  *screen_begin){
 
 void colorset_init(void)
 {
-  char stringa [10];
+
   //char *color;
   //color = (char *) &charcolor_begin;
-  debug_msg("COLOR SET");
+
 
   // copy special characters
   int num_color = 2000;
 
+  #ifdef DEBUG
+  char stringa [10];
+  debug_msg("COLOR SET");
   itoa(num_color, stringa+1,10);
   stringa[0]='O';  
   stringa[6]='\0';
   debug_msg(stringa);
+  #endif
 
   // il primo byte è zero e il secondo contiene un colore
   // non so se venga utilizzato perché sembra sempre uguale
