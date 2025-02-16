@@ -1,7 +1,7 @@
 ###############################################################################
 #                                                                             #
 # Calypsi ISO C compiler for 6502                               version 5.8.1 #
-#                                                       16/Feb/2025  19:09:06 #
+#                                                       16/Feb/2025  22:26:40 #
 # Command line: --target=mega65 --core 45gs02 --no-cross-call -I ./include    #
 #               --list-file=obj/gest_game.lst -o obj/gest_game.o              #
 #               src/gest_game.c                                               #
@@ -32,7 +32,7 @@
 0007
 0008                #define DEBUG
 0009
-0010                unsigned char read_char(int x, int y){
+0010                int read_char(int x, int y){
     \ 0000                      .section code,text
     \ 0000                      .public read_char
     \ 0000 a2f6     read_char:  ldx     #246
@@ -88,7 +88,7 @@
     \ 0060 85..                 sta     zp:_Zp+24
 0015
 0016                    #ifdef DEBUG
-0017                    itoa((int) ((y*80)+x), stringa+2,10);
+0017                    itoa((int) ((y*80)+(x*2)), stringa+2,10);
     \ 0062 a90a                 lda     #10
     \ 0064 85..                 sta     zp:_Zp+4
     \ 0066 a900                 lda     #0
@@ -107,77 +107,81 @@
     \ 0082 a900                 lda     #0
     \ 0084 85..                 sta     zp:_Zp+1
     \ 0086 20....               jsr     _Mul16
-    \ 0089 18                   clc
-    \ 008a a5..                 lda     zp:_Zp+10
-    \ 008c 65..                 adc     zp:_Zp
-    \ 008e 85..                 sta     zp:_Zp
-    \ 0090 a5..                 lda     zp:_Zp+11
-    \ 0092 65..                 adc     zp:_Zp+1
-    \ 0094 85..                 sta     zp:_Zp+1
-    \ 0096 20....               jsr     _FillZP
-    \ 0099 02..                 .byte   2,_Zp+2
-    \ 009b 20....               jsr     itoa
+    \ 0089 cb....               asw     _Zp+10
+    \ 008c 18                   clc
+    \ 008d a5..                 lda     zp:_Zp+10
+    \ 008f 65..                 adc     zp:_Zp
+    \ 0091 85..                 sta     zp:_Zp
+    \ 0093 a5..                 lda     zp:_Zp+11
+    \ 0095 65..                 adc     zp:_Zp+1
+    \ 0097 85..                 sta     zp:_Zp+1
+    \ 0099 20....               jsr     _FillZP
+    \ 009c 02..                 .byte   2,_Zp+2
+    \ 009e 20....               jsr     itoa
 0018                    stringa[0]='A';  
-    \ 009e a941                 lda     #65
-    \ 00a0 a000                 ldy     #0
-    \ 00a2 91..                 sta     (_Vsp),y
+    \ 00a1 a941                 lda     #65
+    \ 00a3 a000                 ldy     #0
+    \ 00a5 91..                 sta     (_Vsp),y
 0019                    stringa[1]=':';  
-    \ 00a4 a93a                 lda     #58
-    \ 00a6 a001                 ldy     #1
-    \ 00a8 91..                 sta     (_Vsp),y
+    \ 00a7 a93a                 lda     #58
+    \ 00a9 a001                 ldy     #1
+    \ 00ab 91..                 sta     (_Vsp),y
 0020                    stringa[8]='\0';
-    \ 00aa a900                 lda     #0
-    \ 00ac a008                 ldy     #8
-    \ 00ae 91..                 sta     (_Vsp),y
+    \ 00ad a900                 lda     #0
+    \ 00af a008                 ldy     #8
+    \ 00b1 91..                 sta     (_Vsp),y
 0021                    debug_msg(stringa);
-    \ 00b0 a5..                 lda     zp:_Vsp
-    \ 00b2 85..                 sta     zp:_Zp
-    \ 00b4 a5..                 lda     zp:_Vsp+1
-    \ 00b6 85..                 sta     zp:_Zp+1
-    \ 00b8 20....               jsr     debug_msg
+    \ 00b3 a5..                 lda     zp:_Vsp
+    \ 00b5 85..                 sta     zp:_Zp
+    \ 00b7 a5..                 lda     zp:_Vsp+1
+    \ 00b9 85..                 sta     zp:_Zp+1
+    \ 00bb 20....               jsr     debug_msg
 0022
 0023                   
-0024                    itoa((int) c, stringa+2,10);
-    \ 00bb a90a                 lda     #10
-    \ 00bd 85..                 sta     zp:_Zp+4
-    \ 00bf a900                 lda     #0
-    \ 00c1 85..                 sta     zp:_Zp+5
-    \ 00c3 a2..                 ldx     #_Zp+2
-    \ 00c5 a902                 lda     #2
-    \ 00c7 20....               jsr     _LoadVspEA
-    \ 00ca a6..                 ldx     zp:_Zp+24
-    \ 00cc 86..                 stx     zp:_Zp
-    \ 00ce a900                 lda     #0
-    \ 00d0 85..                 sta     zp:_Zp+1
-    \ 00d2 20....               jsr     itoa
+0024                    itoa( c, stringa+2,10);
+    \ 00be a90a                 lda     #10
+    \ 00c0 85..                 sta     zp:_Zp+4
+    \ 00c2 a900                 lda     #0
+    \ 00c4 85..                 sta     zp:_Zp+5
+    \ 00c6 a2..                 ldx     #_Zp+2
+    \ 00c8 a902                 lda     #2
+    \ 00ca 20....               jsr     _LoadVspEA
+    \ 00cd a6..                 ldx     zp:_Zp+24
+    \ 00cf 86..                 stx     zp:_Zp
+    \ 00d1 a900                 lda     #0
+    \ 00d3 85..                 sta     zp:_Zp+1
+    \ 00d5 20....               jsr     itoa
 0025                    stringa[0]='C';  
-    \ 00d5 a943                 lda     #67
-    \ 00d7 a000                 ldy     #0
-    \ 00d9 91..                 sta     (_Vsp),y
+    \ 00d8 a943                 lda     #67
+    \ 00da a000                 ldy     #0
+    \ 00dc 91..                 sta     (_Vsp),y
 0026                    stringa[1]=':';  
-    \ 00db a93a                 lda     #58
-    \ 00dd a001                 ldy     #1
-    \ 00df 91..                 sta     (_Vsp),y
+    \ 00de a93a                 lda     #58
+    \ 00e0 a001                 ldy     #1
+    \ 00e2 91..                 sta     (_Vsp),y
 0027                    stringa[6]='\0';
-    \ 00e1 a900                 lda     #0
-    \ 00e3 a006                 ldy     #6
-    \ 00e5 91..                 sta     (_Vsp),y
+    \ 00e4 a900                 lda     #0
+    \ 00e6 a006                 ldy     #6
+    \ 00e8 91..                 sta     (_Vsp),y
 0028                    debug_msg(stringa);
-    \ 00e7 a5..                 lda     zp:_Vsp
-    \ 00e9 85..                 sta     zp:_Zp
-    \ 00eb a5..                 lda     zp:_Vsp+1
-    \ 00ed 85..                 sta     zp:_Zp+1
-    \ 00ef 20....               jsr     debug_msg
+    \ 00ea a5..                 lda     zp:_Vsp
+    \ 00ec 85..                 sta     zp:_Zp
+    \ 00ee a5..                 lda     zp:_Vsp+1
+    \ 00f0 85..                 sta     zp:_Zp+1
+    \ 00f2 20....               jsr     debug_msg
 0029                    
 0030                    #endif
 0031
 0032                    return c;
-    \ 00f2 a5..                 lda     zp:_Zp+24
+    \ 00f5 a6..                 ldx     zp:_Zp+24
+    \ 00f7 86..                 stx     zp:_Zp
+    \ 00f9 a900                 lda     #0
+    \ 00fb 85..                 sta     zp:_Zp+1
 0033
 0034                }
-    \ 00f4 a20a                 ldx     #10
-    \ 00f6 a000                 ldy     #0
-    \ 00f8 4c....               jmp     _DeallocStackRestore
+    \ 00fd a20a                 ldx     #10
+    \ 00ff a000                 ldy     #0
+    \ 0101 4c....               jmp     _DeallocStackRestore
     \ 0000                      .section data,data
     \ 0000                      .public attic_memory_charset
     \ 0000          attic_memory_charset:
@@ -214,5 +218,5 @@
 #                        #
 ##########################
 
-Executable  (Text): 251 bytes
+Executable  (Text): 260 bytes
 Data              :  36 bytes

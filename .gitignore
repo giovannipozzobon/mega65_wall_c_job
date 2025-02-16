@@ -21,3 +21,5 @@ obj/setup.lst
 obj/sprite.lst
 obj/sprite.o
 obj/setup.o
+obj/gest_game.lst
+obj/gest_game.o

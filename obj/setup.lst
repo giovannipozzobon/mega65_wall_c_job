@@ -1,7 +1,7 @@
 ###############################################################################
 #                                                                             #
 # Calypsi ISO C compiler for 6502                               version 5.8.1 #
-#                                                       16/Feb/2025  19:09:06 #
+#                                                       16/Feb/2025  22:26:40 #
 # Command line: --target=mega65 --core 45gs02 --no-cross-call -I ./include    #
 #               --list-file=obj/setup.lst -o obj/setup.o src/setup.c          #
 #                                                                             #

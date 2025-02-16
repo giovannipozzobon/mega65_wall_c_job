@@ -28,6 +28,8 @@ void movesprite_left(struct _SPRITE *sprite);
 void movesprite_rigth(struct _SPRITE *sprite);
 void movesprite_up(struct _SPRITE *sprite);
 void movesprite_down(struct _SPRITE *sprite);
+void check_fall_left(struct _SPRITE *sprite);
+void check_fall_rigth(struct _SPRITE *sprite);
 
 
 

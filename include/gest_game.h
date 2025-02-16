@@ -14,6 +14,6 @@ unsigned char ld = 0; //ladder down
 
 */
 
-unsigned char read_char(int x, int y);
+int read_char(int x, int y);
 
 #endif
