@@ -1,4 +1,4 @@
-#include <mega65/debug_calypis.h>
+#include <debug_calypis.h>
 #include <calypsi/intrinsics6502.h>
 #include <gest_game.h>
 #include <global.h>

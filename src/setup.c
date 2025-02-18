@@ -204,7 +204,7 @@ void sprite_setup(void){
 	VIC2.S0X = 0x20;
   
 	// sprite 0 position Y
-	VIC2.S0Y = 0x20;
+	VIC2.S0Y = 0x45;
   
 	// sprite 1 position X
 	VIC2.S1X = 0x80;
@@ -222,7 +222,7 @@ void sprite_setup(void){
 	VIC2.SPR1COL = 0x00;
 
 	// Sprite 0
-	create_sprite(&sprite[0], 0x20, 0x20,0,0b11111110,0b00000001);
+	create_sprite(&sprite[0], 0x20, 0x45,0,0b11111110,0b00000001);
 
 	// Sprite 1
 	create_sprite(&sprite[1], 0x80, 0x80,1,0b11111101,0b00000010);

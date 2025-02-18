@@ -13,12 +13,13 @@ XMEGA65   = /Applications/Mega65/xmega65.app/Contents/MacOS/xmega65
 ACME 	  = /Applications/acme/acme 
 
 # Common source files
-ASM_SRCS =  $(wildcard src/*.s) $(wildcard src/mega65/*.s) #kernfileio.s dirent.s
+ASM_SRCS =  $(wildcard src/*.s) $(wildcard src/mega65/*.s)
 C_SRCS = $(wildcard src/*.c) $(wildcard src/mega65/*.c)
 # Object files
 OBJS = $(ASM_SRCS:src/%.s=obj/%.o) $(C_SRCS:src/%.c=obj/%.o)
 OBJS_DEBUG = $(ASM_SRCS:%.s=obj/%-debug.o) $(C_SRCS:%.c=obj/%-debug.o)
 DEPS      = $(OBJS:%.o=%.d)
+
 
 export ETHLOAD_IP_PARAM
 
@@ -32,11 +33,13 @@ debug_xemu: wall.d81
 	$(XMEGA65) -uartmon :4510 -8 wall.d81 -besure -curskeyjoy -videostd 0
 
 obj/%.o: %.s
-	as6502 --target=mega65 --list-file=$(@:%.o=%.lst) -o $@ $<
+	as6502 --target=mega65 --list-file=$(@:%.o=%.clst) -o $@ $<
+#	as6502 --target=mega65 --list-file=$(@:%.o=%.lst) -o $@ $<
 
 
 obj/%.o: %.c
-	cc6502 --target=mega65 --core 45gs02  --no-cross-call  -I ./include --list-file=$(@:%.o=%.lst) -o $@ $<
+	cc6502 --target=mega65 --core 45gs02 --no-cross-call  -I ./include --list-file=$(@:%.o=%.clst) -o $@ $<
+#	cc6502 --target=mega65 --core 45gs02 --no-cross-call  -I ./include --list-file=$(@:%.o=%.lst) -o $@ $<
 
 obj/%-debug.o: %.s
 	as6502 --target=mega65 --debug --list-file=$(@:%.o=%.lst) -o $@ $<
@@ -45,7 +48,8 @@ obj/%-debug.o: %.c
 	cc6502 --target=mega65 --debug --list-file=$(@:%.o=%.lst) -o $@ $<
 
 wall.prg:  $(OBJS)
-	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^  --output-format=prg --list-file=wall-mega65.lst
+	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^ --rtattr printf=nofloat --rtattr exit=simplified --output-format=prg --verbose --list-file=./obj/wall-mega65.cmap
+#	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^  --output-format=prg --list-file=wall-mega65.lst
 #	$(ACME) -f cbm -o install.prg -l install.lst -r install.rpt ./src/install.s
 
     #ln6502 --target=mega65 mega65-plain.scm  mega65-banked.scm  -o $@ $^ --output-format=prg --list-file=hello-mega65.lst
@@ -67,9 +71,9 @@ wall.d81: wall.prg
 
 
 clean:
-	-rm $(OBJS) $(OBJS:%.o=%.lst) $(OBJS_DEBUG) $(OBJS_DEBUG:%.o=%.lst)
-	-rm wall.elf wall.prg wall-mega65.lst wall-debug.lst wall.d81
-	-rm *.raw
+	-rm $(OBJS) $(OBJS:%.o=%.lst) $(OBJS_DEBUG) $(OBJS_DEBUG:%.o=%.lst) $(OBJS:%.o=%.clst) $(OBJS_DEBUG:%.o=%.clst)
+	-rm wall.elf wall.prg wall-mega65.lst ./obj/wall-mega65.cmap wall-debug.lst wall.d81 source.txt
+#	-rm *.raw
 
 xemu:
 	test -f wall.prg && /Applications/Mega65/bin/xmega65 -curskeyjoy -besure -uartmon :4510 -8 ./wall.D81 -prg wall.prg

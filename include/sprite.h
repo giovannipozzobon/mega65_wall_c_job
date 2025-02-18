@@ -13,9 +13,11 @@ struct _SPRITE {
     char Read_Sprite_Pos_Char_X;
     char direction;
     unsigned char shape;
-    unsigned char wall;
-    unsigned char ladder;
-    unsigned char collision;
+    char wall;
+    char ladder;
+    char key;
+    char door;
+    char collision;
 
 };
 

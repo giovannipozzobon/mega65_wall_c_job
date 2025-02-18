@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <mega65/kernfileio.h>
+#include <kernfileio.h>
 
 void loadfile(char * filename);
 

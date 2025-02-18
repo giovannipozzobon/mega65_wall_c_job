@@ -1,5 +1,5 @@
 #include <file_fun.h>
-#include <mega65/debug_calypis.h>
+#include <debug_calypis.h>
 #include <global.h>
 #include <string.h>
 

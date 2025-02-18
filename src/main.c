@@ -4,7 +4,7 @@
 #include <string.h>
 #include <file_fun.h>
 #include <global.h>
-#include <mega65/debug_calypis.h>
+#include <debug_calypis.h>
 #include <chips.h>
 #include <setup.h>
 #include <input.h>

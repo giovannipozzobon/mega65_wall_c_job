@@ -1,6 +1,6 @@
 #include <sprite.h>
 #include <chips.h>
-#include <mega65/debug_calypis.h>
+#include <debug_calypis.h>
 #include <global.h>
 
 #define DEBUG
@@ -12,8 +12,8 @@ void create_sprite(struct _SPRITE *sprite, int x, unsigned char y, unsigned char
     sprite->bit_Minus_X = bit_Minus_X;
     sprite->bit_Mag_X = bit_Mag_X;
     sprite->Read_Sprite_Pos_Char_X = (x/8)-3;
-    sprite->Read_Sprite_Pos_Char_Y = (y/8)-6;
-    sprite->direction = LEFT;
+    sprite->Read_Sprite_Pos_Char_Y = (y/8)-3;
+    sprite->direction = FALSE;
     sprite->wall = FALSE;
     sprite->ladder = FALSE;
     sprite->collision = FALSE;
@@ -64,8 +64,9 @@ void check_fall_left(struct _SPRITE *sprite){
 
     while (1)
     {
-        Char = read_char(((sprite->x+6)/8)-3, ((sprite->y+19)/8)-6); // verifica se serve aggiungere 1 al posizione X del carattere
-        
+        //Char = read_char(((sprite->x+6)/8)-3, ((sprite->y+19)/8)-6); // verifica se serve aggiungere 1 al posizione X del carattere
+        Char = read_char(((sprite->x+2)/8)-2, ((sprite->y+16)/8)-3);
+
         #ifdef DEBUG
         char stringa[10];
         stringa[0]='H';  
@@ -96,7 +97,8 @@ void check_fall_rigth(struct _SPRITE *sprite){
 
     while (1)
     {
-        Char = read_char(((sprite->x+2)/8)-3, ((sprite->y+19)/8)-6); // verifica se serve aggiungere 1 al posizione X del carattere
+        //Char = read_char(((sprite->x+2)/8)-3, ((sprite->y+19)/8)-6); // verifica se serve aggiungere 1 al posizione X del carattere
+        Char = read_char(((sprite->x+2)/8)-3, ((sprite->y+16)/8)-3);
 
         #ifdef DEBUG
         char stringa[10];
@@ -142,14 +144,20 @@ void movesprite(struct _SPRITE *sprite, int x, char y) {
 
 void movesprite_left(struct _SPRITE *sprite){
     int Char;
-
+    
     //Check coordinate x and collision
     if ((sprite->collision == FALSE) &&(sprite->x <= 24)) return;
 
+    // reset variables  
+    sprite->wall = FALSE;
+    sprite->ladder = FALSE;
+    sprite->key = FALSE;
+    sprite->door = FALSE;
+    
     //calculate new position and char position
     sprite->x--;
     sprite->Read_Sprite_Pos_Char_X = (sprite->x/8)-3;
-    sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-6) > 0  ? ((sprite->y/8)-6) : 0 ;
+    sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-4) > 0  ? ((sprite->y/8)-4) : 0 ;
     sprite->direction = LEFT;
 
     //debug information
@@ -186,26 +194,142 @@ void movesprite_left(struct _SPRITE *sprite){
     
     // check wall routine
     Char = read_char(sprite->Read_Sprite_Pos_Char_X, sprite->Read_Sprite_Pos_Char_Y);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - WALL 1");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - LADDER 1");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - KEY 1");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - DOOR 1");
+        #endif  
+    } 
+     
+
+    #ifdef DEBUG
+    stringa[0]='L';  
+    stringa[1]=':';
+    stringa[2]=' ';
+    stringa[3]=' ';
+    stringa[4]=' ';      
+    stringa[6]='\0';
+    itoa(Char, stringa+2,10);
+    debug_msg(stringa);
+    #endif
 
     Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+1);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - WALL 2");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - LADDER 2");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - KEY 2");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - DOOR 2");
+        #endif  
+    } 
+
+    #ifdef DEBUG
+    stringa[0]='L';  
+    stringa[1]=':';
+    stringa[2]=' ';
+    stringa[3]=' ';
+    stringa[4]=' ';      
+    stringa[6]='\0';
+    itoa(Char, stringa+2,10);
+    debug_msg(stringa);
+    #endif
 
     Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+2);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - WALL 3");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - LADDER 3");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - KEY 3");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - DOOR 3");
+        #endif  
+    } 
+
+    #ifdef DEBUG
+    stringa[0]='L';  
+    stringa[1]=':';
+    stringa[2]=' ';
+    stringa[3]=' ';
+    stringa[4]=' ';      
+    stringa[6]='\0';
+    itoa(Char, stringa+2,10);
+    debug_msg(stringa);
+    #endif
     
     // todo: check detect collect routine
 
-    if (sprite->wall == TRUE) sprite->x++;
+    if (sprite->wall == TRUE){
+        sprite->x++;
+        #ifdef DEBUG
+        debug_msg(" MOVE LEFT - WALL X++");
+        stringa[0]='W';  
+        stringa[1]=':';    
+        stringa[6]='\0';
+        itoa(sprite->wall, stringa+2,10);
+        debug_msg(stringa);
+        #endif        
+    }   
 
 }
 
 void movesprite_rigth(struct _SPRITE *sprite){
     int Char;
 
+    //Check coordinate x and collision
+    if ((sprite->collision == FALSE) &&(sprite->x > 320)) return; //todo: check value 312 è correttto?
+
+    // reset variables  
+    sprite->wall = FALSE;
+    sprite->ladder = FALSE;
+    sprite->key = FALSE;
+    sprite->door = FALSE;
+
+    //calculate new position and char position
     sprite->x++;
-    sprite->Read_Sprite_Pos_Char_X = (sprite->x/8)-3;
-    sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-6) > 0  ? ((sprite->y/8)-6) : 0 ;
+    //sprite->Read_Sprite_Pos_Char_X = (sprite->x/8)-3;
+    sprite->Read_Sprite_Pos_Char_X = (sprite->x/8)-2;
+    //sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-6) > 0  ? ((sprite->y/8)-6) : 0 ;
+    sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-4) > 0  ? ((sprite->y/8)-4) : 0 ;
     sprite->direction = RIGTH;
 
     #ifdef DEBUG
@@ -241,7 +365,27 @@ void movesprite_rigth(struct _SPRITE *sprite){
     
     // check collision routine
     Char = read_char(sprite->Read_Sprite_Pos_Char_X, sprite->Read_Sprite_Pos_Char_Y);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - WALL 1");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - LADDER 1");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - KEY 1");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - DOOR 1");
+        #endif  
+    } 
 
     #ifdef DEBUG
     stringa[0]='Q';  
@@ -255,7 +399,27 @@ void movesprite_rigth(struct _SPRITE *sprite){
     #endif
 
     Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+1);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - WALL 2");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - LADDER 2");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - KEY 2");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - DOOR 2");
+        #endif  
+    } 
 
     #ifdef DEBUG
     stringa[0]='Q';  
@@ -269,7 +433,28 @@ void movesprite_rigth(struct _SPRITE *sprite){
     #endif
 
     Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+2);
-    if (Char == WALL) sprite->wall = TRUE;
+    if (Char == WALL) {
+        sprite->wall = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - WALL 3");
+        #endif        
+    } else if (Char == LADDER){
+        sprite->ladder = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - LADDER 3");
+        #endif  
+    } else if (Char == KEYS){
+        sprite->key = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - KEY 3");
+        #endif  
+    } else if (Char == DOORS){
+        sprite->door = TRUE;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - DOOR 3");
+        #endif  
+    }   
+    
 
     #ifdef DEBUG
     stringa[0]='Q';  
@@ -284,14 +469,23 @@ void movesprite_rigth(struct _SPRITE *sprite){
 
     // todo: check detect collect routine
 
-    if (sprite->wall == TRUE) sprite->x--;
-
+    if (sprite->wall == TRUE) {
+        sprite->x--;
+        #ifdef DEBUG
+        debug_msg(" MOVE RIGTH - WALL X--");
+        stringa[0]='W';  
+        stringa[1]=':';    
+        stringa[6]='\0';
+        itoa(sprite->wall, stringa+2,10);
+        debug_msg(stringa);
+        #endif        
+    }    
 }
 
 void movesprite_up(struct _SPRITE *sprite){
     int Char;
 
-    sprite->collision = FALSE;
+    if (sprite->ladder == FALSE) return;
 
     if (sprite->direction == LEFT) {
 
