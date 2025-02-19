@@ -1,0 +1,10 @@
+h
+-h
+dis gameloop
+dis setscreen
+dis 00002eff
+dump  00002eff
+dis 00002eff 10f
+dis 00002efff 10
+dis 00002eff 10
+dis gameloop 

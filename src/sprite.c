@@ -332,6 +332,7 @@ void movesprite_rigth(struct _SPRITE *sprite){
     sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-4) > 0  ? ((sprite->y/8)-4) : 0 ;
     sprite->direction = RIGTH;
 
+
     #ifdef DEBUG
     debug_msg("MOVE SPRITE RIGTH");
     char stringa[10];
@@ -485,8 +486,20 @@ void movesprite_rigth(struct _SPRITE *sprite){
 void movesprite_up(struct _SPRITE *sprite){
     int Char;
 
+    // reset variables
+    sprite->ladder = FALSE;
+
+    //check if sprite is on ladder
+    Char = read_char(((sprite->x+4)/8)-3, ((sprite->y+8)/8)-3);
+    if (Char == LADDER) sprite->ladder = TRUE;
+    Char = read_char(((sprite->x+4)/8)-3, ((sprite->y+14)/8)-3);
+    if (Char == LADDER) sprite->ladder = TRUE;    
+    
     if (sprite->ladder == FALSE) return;
 
+    sprite->y--;
+    
+    /*
     if (sprite->direction == LEFT) {
 
         sprite->Read_Sprite_Pos_Char_X = ((sprite->x+4)/8)-3;
@@ -542,13 +555,27 @@ void movesprite_up(struct _SPRITE *sprite){
         sprite->ladder = TRUE;
         sprite->collision = TRUE;
     }    
-    
+    */
 
 }
 
 void movesprite_down(struct _SPRITE *sprite){
     int Char;
 
+    // reset variables
+    sprite->ladder = FALSE;
+
+    //check if sprite is on ladder
+    //Char = read_char(((sprite->x+4)/8)-3, ((sprite->y+8)/8)-3);
+    //if (Char == LADDER) sprite->ladder = TRUE;
+    Char = read_char(((sprite->x+4)/8)-3, ((sprite->y+16)/8)-3);
+    if (Char == LADDER) sprite->ladder = TRUE;    
+    
+    if (sprite->ladder == FALSE) return;
+
+    sprite->y++;
+
+    /*
     sprite->collision = FALSE;
 
     if (sprite->direction == LEFT) {
@@ -605,6 +632,6 @@ void movesprite_down(struct _SPRITE *sprite){
         sprite->ladder = TRUE;
         sprite->collision = TRUE;
     }
-    
+    */
    
 }
