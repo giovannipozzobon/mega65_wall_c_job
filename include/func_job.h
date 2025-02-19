@@ -10,4 +10,9 @@ __attribute__((leaf))
 #endif
 extern void wait_very_briefly(uint8_t);   
 
+#ifdef __clang__
+__attribute__((leaf))
+#endif
+extern void wait_raster(uint8_t);   
+
 #endif

@@ -17,6 +17,13 @@
 #define DOWN 3
 #define UP 4
 
+// sprite delay for movement
+#define DELAY_JOY 2
+#define DELAY_JUMP 5
+
+#define JUMP_LEN 6
+
+
 // types of chars of the screen
 #define WALL 1
 #define SPACE 0x20
@@ -34,8 +41,6 @@
 #define TITLE_LINE_LENGTH     80
 #define TITLE_LINE_COUNT      24
 
-// sprite delay for movement
-#define DELAY_JOY 2
 
 /// memoria riservata per i caratteri jobond 20/11/2024
 #define CHARSET_MEMORY 0x44000

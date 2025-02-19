@@ -2,8 +2,10 @@
 #include <chips.h>
 #include <debug_calypis.h>
 #include <global.h>
+#include <func_job.h>
 
-#define DEBUG
+//#define DEBUG
+
 
 void create_sprite(struct _SPRITE *sprite, int x, unsigned char y, unsigned char spritenumber, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
     sprite->x = x;
@@ -79,9 +81,13 @@ void check_fall_left(struct _SPRITE *sprite){
         if (Char == SPACE) {
             sprite->y++;
             drawsprite(sprite);
+            #ifdef DEBUG
             debug_msg("FALL LEFT OK");
+            #endif
         }   else {
+            #ifdef DEBUG
             debug_msg("CHECK FALL LEFT EXIT");
+            #endif
            return;
         }
     }
@@ -112,9 +118,13 @@ void check_fall_rigth(struct _SPRITE *sprite){
         if (Char == SPACE) {
             sprite->y++;
             drawsprite(sprite);
+            #ifdef DEBUG
             debug_msg("FALL RIGTH OK");
+            #endif
         }   else {
+            #ifdef DEBUG
             debug_msg("CHECK FALL RIGTH EXIT");
+            #endif
             return;
         }
     }
@@ -498,7 +508,7 @@ void movesprite_up(struct _SPRITE *sprite){
     if (sprite->ladder == FALSE) return;
 
     sprite->y--;
-    
+
     /*
     if (sprite->direction == LEFT) {
 
@@ -635,3 +645,60 @@ void movesprite_down(struct _SPRITE *sprite){
     */
    
 }
+
+void jumpsprite(struct _SPRITE *sprite){
+    int count = 0;
+
+    //Check if it can jump
+    if (sprite->ladder == TRUE) return;
+    
+    //sprite->jumping = 0;
+
+    while (count  < JUMP_LEN)
+    {
+        sprite->y = sprite->y+spread_vert[count];
+        drawsprite(sprite);
+        wait_very_briefly(DELAY_JUMP);
+        //wait_raster(DELAY_JUMP);
+        count++;
+        #ifdef DEBUG   
+        debug_msg("JUMP");
+        char stringa[10];
+        stringa[0]='J';  
+        stringa[1]=':';  
+        stringa[6]='\0';
+        itoa((int)sprite->y, stringa+2,10);
+        debug_msg(stringa);
+        #endif
+    }
+}      
+
+void jumpsprite_rigth(struct _SPRITE *sprite){
+    int count = 0;
+
+    //Check if it can jump
+    if (sprite->ladder == TRUE) return;
+    
+    //sprite->jumping = 0;
+
+    while (count  < JUMP_LEN)
+    {
+        sprite->y = sprite->y+spread_vert[count];
+        sprite->x = sprite->x+spread_horiz[count];
+        drawsprite(sprite);
+        wait_very_briefly(DELAY_JUMP);
+        //wait_raster(DELAY_JUMP);
+        count++;
+        #ifdef DEBUG   
+        debug_msg("JUMP RIGTH");
+        char stringa[10];
+        stringa[0]='J';  
+        stringa[1]=':';  
+        stringa[6]='\0';
+        itoa((int)sprite->y, stringa+2,10);
+        debug_msg(stringa);
+        #endif
+
+        //todo: check if the sprite reachs the floor
+    }
+}      

@@ -5,7 +5,7 @@
 #include "chips.h"
 
 
-#define DEBUG
+//#define DEBUG
 
 int read_char(int x, int y){
     char stringa [10];

@@ -6,6 +6,7 @@
 
     .section code,text
     .public wait_very_briefly
+    .public wait_raster
 
 
 
@@ -24,4 +25,14 @@ loop:
         bmi ---
         dex
         bne loop
+        rts
+
+
+ wait_raster:
+        //lda contains the number of raster lines to wait
+--
+        cmp 0xd012
+        bne --
+        bit 0xd011
+        bmi --  // rch is high, not our stop
         rts

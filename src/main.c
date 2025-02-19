@@ -37,7 +37,8 @@ void main(void) {
     setup_resource();
 
     while(1) {
-        wait_very_briefly(DELAY_JOY);
+        //wait_very_briefly(DELAY_JOY);
+        wait_raster(DELAY_JOY);
         gameloop();
     }
 
@@ -79,7 +80,6 @@ void gameloop(void) {
         debug_msg("JOY LEFT");
         #endif
 
-        //movesprite(&sprite[0],-1,0);
         movesprite_left(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
@@ -90,7 +90,7 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY RIGTH");
         #endif
-        //movesprite(&sprite[0],1,0);
+
         movesprite_rigth(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
@@ -101,7 +101,7 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY UP");
         #endif
-        //movesprite(&sprite[0],0,-1);
+
         movesprite_up(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
@@ -112,7 +112,7 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY DOWN");
         #endif
-        //movesprite(&sprite[0],0,1);
+
         movesprite_down(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
@@ -123,7 +123,8 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY FIRE ");
         #endif
-
+        jumpsprite(&sprite[0]);
+        //drawsprite(&sprite[0]);
         return;
     }       
 
