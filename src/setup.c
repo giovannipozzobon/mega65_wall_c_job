@@ -156,8 +156,7 @@ void sprite_setup(void){
   
 	// set data for 1st sprite
 	SPRITE_PTRS[1] = ((((int)sprite_ptr)+24*8) >> 6);
-  
-  
+	
 	#ifdef DEBUG
 	char stringa [10];
 	itoa((int)sprite_ptr, stringa+1,10);
@@ -221,12 +220,6 @@ void sprite_setup(void){
 	// Sprite 1 color 
 	VIC2.SPR1COL = 0x00;
 
-	// Sprite 0
-	create_sprite(&sprite[0], 0x20, 0x45,0,0b11111110,0b00000001);
-
-	// Sprite 1
-	create_sprite(&sprite[1], 0x80, 0x80,1,0b11111101,0b00000010);
-  
   }
   
 

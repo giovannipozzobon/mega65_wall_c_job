@@ -1,24 +1,26 @@
 #ifndef __SPRITE_H
 #define __SPRITE_H
 
+#include <stdint.h>
+
 struct _SPRITE {
-    unsigned int x;
-    unsigned char y;
-    unsigned char upper_254_x;
-    unsigned char spritenumber;
-    unsigned char enabled;
-    unsigned char bit_Minus_X;
-    unsigned char bit_Mag_X;
-    char Read_Sprite_Pos_Char_Y;
-    char Read_Sprite_Pos_Char_X;
-    char direction;
-    unsigned char shape;
-    char wall;
-    char ladder;
-    char key;
-    char door;
-    char collision;
-    int jumping;
+    uint16_t sprite_number;
+    uint16_t x;
+    uint8_t y;
+    uint8_t upper_254_x;
+    uint8_t enabled;
+    uint8_t bit_Minus_X;
+    uint8_t bit_Mag_X;
+    uint8_t Read_Sprite_Pos_Char_Y;
+    uint8_t Read_Sprite_Pos_Char_X;
+    uint8_t direction;
+    uint8_t shape;
+    uint8_t wall;
+    uint8_t ladder;
+    uint8_t key;
+    uint8_t door;
+    uint8_t collision;
+    uint16_t jumping;
 
 };
 
@@ -26,7 +28,7 @@ struct _SPRITE {
 char spread_horiz[]= {0,5,5,5,5,0};
 char spread_vert[]= {-5,-5,0,0,5,5};
 
-void create_sprite(struct _SPRITE *sprite, int x, unsigned char y, unsigned char spritenumber, unsigned char bit_Minus_X, unsigned char bit_Mag_X);
+void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X);
 
 void drawsprite(struct _SPRITE *sprite);
 

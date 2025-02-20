@@ -36,6 +36,16 @@ void main(void) {
 
     setup_resource();
 
+
+    // Create Sprite 0
+	create_sprite(&sprite[0], 0, 0x20, 0x45,0b11111110,0b00000001);
+	//drawsprite(&sprite[0]);
+
+	// Create Sprite 1
+	create_sprite(&sprite[1], 1, 0x80, 0x80,0b11111101,0b00000010);
+	//drawsprite(&sprite[1]);
+
+
     while(1) {
         //wait_very_briefly(DELAY_JOY);
         wait_raster(DELAY_JOY);
@@ -57,7 +67,7 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY LEFT FIRE");
         #endif
-        movesprite(&sprite[0],-1,-1);
+        jumpsprite_left(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }
@@ -68,7 +78,7 @@ void gameloop(void) {
         #ifdef DEBUG
         debug_msg("JOY RIGTH FIRE");
         #endif
-        movesprite(&sprite[0],1,-1);
+        jumpsprite_rigth(&sprite[0]);
         drawsprite(&sprite[0]);
         return;
     }

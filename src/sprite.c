@@ -3,14 +3,16 @@
 #include <debug_calypis.h>
 #include <global.h>
 #include <func_job.h>
+#include <gest_game.h>
+#include <stdint.h>
 
-//#define DEBUG
+#define DEBUG
 
 
-void create_sprite(struct _SPRITE *sprite, int x, unsigned char y, unsigned char spritenumber, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
+void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
+    sprite->sprite_number = sprite_number;
     sprite->x = x;
     sprite->y = y;
-    sprite->spritenumber = spritenumber;
     sprite->bit_Minus_X = bit_Minus_X;
     sprite->bit_Mag_X = bit_Mag_X;
     sprite->Read_Sprite_Pos_Char_X = (x/8)-3;
@@ -23,22 +25,31 @@ void create_sprite(struct _SPRITE *sprite, int x, unsigned char y, unsigned char
 
 void drawsprite(struct _SPRITE *sprite) {
 
-    VIC2.S0Y = sprite->y;
+    poke(0xd001+sprite->sprite_number, sprite->y);
 
     if (sprite->x <= 254) {
+        poke(0xd000+sprite->sprite_number, sprite->x);
+        //VIC2.S0X = sprite->x;
         VIC2.SXMSB = VIC2.SXMSB & sprite->bit_Minus_X; // Abilita il bit dello coordinate X <= 254 dello sprite
-        VIC2.S0X = (unsigned char) sprite->x;
-    }
-    else {
-        VIC2.SXMSB = VIC2.SXMSB | sprite->bit_Mag_X; // Abilita il bit dello coordinate X > 254 dello sprite
-        VIC2.S0X = (unsigned char) (sprite->x -255);
 
     }
+    else {
+        poke(0xd000+sprite->sprite_number, sprite->x-255);
+        //VIC2.S0X = sprite->x-255;
+        VIC2.SXMSB = VIC2.SXMSB | sprite->bit_Mag_X; // Abilita il bit dello coordinate X > 254 dello sprite
+
+    }
+    
 
     #ifdef DEBUG
     debug_msg("DRAW SPRITE");
     char stringa[10];
-	stringa[0]='Y';  
+	stringa[0]='S';  
+	stringa[1]=':';  
+	stringa[6]='\0';
+    itoa(0xd000+sprite->sprite_number, stringa+2,16);
+    debug_msg(stringa);
+    stringa[0]='Y';  
 	stringa[1]=':';  
 	stringa[6]='\0';
     itoa((unsigned int)sprite->y, stringa+2,10);
@@ -104,7 +115,7 @@ void check_fall_rigth(struct _SPRITE *sprite){
     while (1)
     {
         //Char = read_char(((sprite->x+2)/8)-3, ((sprite->y+19)/8)-6); // verifica se serve aggiungere 1 al posizione X del carattere
-        Char = read_char(((sprite->x+2)/8)-3, ((sprite->y+16)/8)-3);
+        Char = read_char(((sprite->x+2)/8)-2, ((sprite->y+16)/8)-3);
 
         #ifdef DEBUG
         char stringa[10];
@@ -170,8 +181,10 @@ void movesprite_left(struct _SPRITE *sprite){
     sprite->Read_Sprite_Pos_Char_Y = ((sprite->y/8)-4) > 0  ? ((sprite->y/8)-4) : 0 ;
     sprite->direction = LEFT;
 
+
     //debug information
     #ifdef DEBUG
+    debug_msg("LEFT");
     debug_msg("MOVE SPRITE LEFT");
     char stringa[10];
 	stringa[0]='Y';  
@@ -343,7 +356,9 @@ void movesprite_rigth(struct _SPRITE *sprite){
     sprite->direction = RIGTH;
 
 
+
     #ifdef DEBUG
+    debug_msg("RIGTH");
     debug_msg("MOVE SPRITE RIGTH");
     char stringa[10];
 	stringa[0]='Y';  
@@ -509,64 +524,6 @@ void movesprite_up(struct _SPRITE *sprite){
 
     sprite->y--;
 
-    /*
-    if (sprite->direction == LEFT) {
-
-        sprite->Read_Sprite_Pos_Char_X = ((sprite->x+4)/8)-3;
-        sprite->Read_Sprite_Pos_Char_Y = (((sprite->y+2)/8)-6) > 0  ? (((sprite->y+2)/8)-6) : 0 ;        
-    }
-    else {
- 
-        sprite->Read_Sprite_Pos_Char_X = ((sprite->x+4)/8)-3;
-        sprite->Read_Sprite_Pos_Char_Y = (((sprite->y+2)/8)-6) > 0  ? (((sprite->y+2)/8)-6) : 0 ;
-            
-    }
- 
-
-    #ifdef DEBUG
-    debug_msg("MOVE SPRITE UP");
-    char stringa[10];
-	stringa[0]='Y';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa((int)sprite->y, stringa+2,10);
-    debug_msg(stringa);
-	stringa[0]='X';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa(sprite->x, stringa+2,10);
-    debug_msg(stringa);
-
-    stringa[0]='R';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa((int)sprite->Read_Sprite_Pos_Char_X, stringa+2,10);
-    debug_msg(stringa);
-	stringa[0]='R';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa(sprite->Read_Sprite_Pos_Char_Y, stringa+2,10);
-    debug_msg(stringa);
-    #endif
-
-    // sprite change shape
-
-    // check fall routine
-    
-    // check collision routine
-
-    Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+2);
-
-    if (Char == WALL) {
-        sprite->wall = TRUE;
-        sprite->collision = TRUE;
-    } else if (Char == LADDER){
-        sprite->y--;
-        sprite->ladder = TRUE;
-        sprite->collision = TRUE;
-    }    
-    */
-
 }
 
 void movesprite_down(struct _SPRITE *sprite){
@@ -585,65 +542,7 @@ void movesprite_down(struct _SPRITE *sprite){
 
     sprite->y++;
 
-    /*
-    sprite->collision = FALSE;
-
-    if (sprite->direction == LEFT) {
-
-        sprite->Read_Sprite_Pos_Char_X = ((sprite->x+4)/8)-3;
-        sprite->Read_Sprite_Pos_Char_Y = (((sprite->y+3)/8)-6) > 0  ? (((sprite->y+3)/8)-6) : 0 ;        
-    }
-    else {
  
-        sprite->Read_Sprite_Pos_Char_X = ((sprite->x+4)/8)-3;
-        sprite->Read_Sprite_Pos_Char_Y = (((sprite->y+3)/8)-6) > 0  ? (((sprite->y+3)/8)-6) : 0 ;
-            
-    }
- 
-
-    #ifdef DEBUG
-    debug_msg("MOVE SPRITE UP");
-    char stringa[10];
-	stringa[0]='Y';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa((int)sprite->y, stringa+2,10);
-    debug_msg(stringa);
-	stringa[0]='X';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa(sprite->x, stringa+2,10);
-    debug_msg(stringa);
-
-    stringa[0]='R';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa((int)sprite->Read_Sprite_Pos_Char_X, stringa+2,10);
-    debug_msg(stringa);
-	stringa[0]='R';  
-	stringa[1]=':';  
-	stringa[6]='\0';
-    itoa(sprite->Read_Sprite_Pos_Char_Y, stringa+2,10);
-    debug_msg(stringa);
-    #endif
-
-    // sprite change shape
-
-    // check fall routine
-    
-    // check collision routine
-
-    Char = read_char(sprite->Read_Sprite_Pos_Char_X+1, sprite->Read_Sprite_Pos_Char_Y+2);
-    if (Char == WALL) {
-        sprite->wall = TRUE;
-        sprite->collision = TRUE;
-    } else if (Char == LADDER){
-        sprite->y++;
-        sprite->ladder = TRUE;
-        sprite->collision = TRUE;
-    }
-    */
-   
 }
 
 void jumpsprite(struct _SPRITE *sprite){
@@ -661,6 +560,7 @@ void jumpsprite(struct _SPRITE *sprite){
         wait_very_briefly(DELAY_JUMP);
         //wait_raster(DELAY_JUMP);
         count++;
+
         #ifdef DEBUG   
         debug_msg("JUMP");
         char stringa[10];
@@ -689,6 +589,7 @@ void jumpsprite_rigth(struct _SPRITE *sprite){
         wait_very_briefly(DELAY_JUMP);
         //wait_raster(DELAY_JUMP);
         count++;
+
         #ifdef DEBUG   
         debug_msg("JUMP RIGTH");
         char stringa[10];
@@ -699,6 +600,38 @@ void jumpsprite_rigth(struct _SPRITE *sprite){
         debug_msg(stringa);
         #endif
 
-        //todo: check if the sprite reachs the floor
+        //todo: check if the sprite reachs the floor or space
     }
 }      
+
+
+void jumpsprite_left(struct _SPRITE *sprite){
+    int count = 0;
+
+    //Check if it can jump
+    if (sprite->ladder == TRUE) return;
+    
+    //sprite->jumping = 0;
+
+    while (count  < JUMP_LEN)
+    {
+        sprite->y = sprite->y+spread_vert[count];
+        sprite->x = sprite->x-spread_horiz[count];
+        drawsprite(sprite);
+        wait_very_briefly(DELAY_JUMP);
+        //wait_raster(DELAY_JUMP);
+        count++;
+
+        #ifdef DEBUG   
+        debug_msg("JUMP LEFT");
+        char stringa[10];
+        stringa[0]='J';  
+        stringa[1]=':';  
+        stringa[6]='\0';
+        itoa((int)sprite->y, stringa+2,10);
+        debug_msg(stringa);
+        #endif
+
+        //todo: check if the sprite reachs the floor or space
+    }
+}    
