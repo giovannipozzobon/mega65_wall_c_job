@@ -38,6 +38,8 @@
 #define LEN_SCREEN  2000
 #define LEN_SPRITE  360
 
+#define STEP_MEMORY_SCREEN 0xb00
+
 #define TITLE_LINE_LENGTH     80
 #define TITLE_LINE_COUNT      24
 
@@ -95,8 +97,10 @@ unsigned char __far  *attic_memory_buffer = 0x8100000;
 */
 
 char charfile [] = "CHARS";
-char screenfile [] = "SCREEN";
+char screenfile [] = "SCREEN0";
+char screenfile1 [] = "SCREEN1";
 char spritefile [] = "SPRITE";
+char filename_screen[3][8] = {"SCREEN0","SCREEN1","SCREEN2"};
 
 extern unsigned char __far *attic_memory;
 extern  unsigned char bank_file;

@@ -5,6 +5,8 @@
 /// All rights reserved.
 #include "input.h"
 #include "chips.h"
+#include <debug_calypis.h>
+
 
 
 /// \brief	This procedure processes the player input
@@ -32,6 +34,22 @@ void process_input() {
 		key_down = 0;
 	}
 	
+
+	// is N pressed?  This is a special keyboard command for load new level by Jobond
+	KEYSCAN.MATRIXPEEK = 0x04;
+	if ((KEYSCAN.CRTACSCNT & (0x01 << 0x07)) == 0) {
+		// if it is pressed, and it wasn't the last time we test it,
+		if (!key_down) {
+			// and flag that the N key is down, so that we can wait for the key
+			// to be released before toggline again.  This is so we don't very
+			// rapidly toggle the music on and off every frame this input is
+			// called
+			player_input = 0b00100000;
+			debug_msg("KEY N PRESSED");
+			return;
+		}
+	} 
+
 	// load joystick two.  we mask it to just the relevant bits, and we also
 	// invert the values because the default is for the bits being off to
 	// indicate movement and fire button.  we invert it to make the code more
@@ -90,6 +108,7 @@ void process_input() {
 			player_input |= 0b00001000;
 		}
 	}
+
 }
 
 /// \brief	This variable contains the player input
@@ -103,6 +122,7 @@ void process_input() {
 /// %00000100 | Left
 /// %00001000 | Right
 /// %00010000 | Fire
+/// %00100000 | Load new level by Jobond
 ///
 /// This is basically the same bitmask as the CIA joystick bitmask, only 
 /// inverted and without using the top 3 bits.

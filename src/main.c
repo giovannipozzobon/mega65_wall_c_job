@@ -24,13 +24,19 @@ struct m65_dirent __attribute__((zpage)) *m65_dirent_exchange;
 unsigned char __far *attic_memory;
 unsigned char bank_file;
 
+uint8_t level;
+
 void loadresource(void);
 void setup_resource(void);
 void gameloop(void);
+void load_screen(uint8_t level);
+
 
 
 void main(void) {
 
+    //level 0 (first level)
+    level = 0;
 
     loadresource();
 
@@ -138,6 +144,17 @@ void gameloop(void) {
         return;
     }       
 
+    // key N?  Load new level
+    if (player_input == 0b00100000) {
+        // fire
+        #ifdef DEBUG
+        debug_msg("LOAD NEW LEVEL ");
+        #endif
+        level++;
+        load_screen(level);
+        return;
+    }  
+
     return;
 }
 
@@ -148,8 +165,16 @@ void loadresource(void) {
     attic_memory = attic_memory_charset;
     loadfile(charfile);
 
-    //load the screen file
+    //load the screen file 0
     attic_memory = attic_memory_screen;
+    loadfile(screenfile);
+
+    //load the screen file 1
+    attic_memory = attic_memory_screen+(STEP_MEMORY_SCREEN*1);
+    loadfile(screenfile1);
+
+    //load the screen file 2
+    attic_memory = attic_memory_screen+(STEP_MEMORY_SCREEN*2);
     loadfile(screenfile);
 
     //load the sprite file
@@ -158,6 +183,27 @@ void loadresource(void) {
 
     return;
 }
+
+void load_screen(uint8_t level) {
+    //load the screen file
+
+    // todo: togliere serve solo per fare un test
+    level = 1;
+    #ifdef DEBUG
+    debug_msg("LOAD NEXT SCREEN");
+    char stringa[10];
+	stringa[0]='S';  
+	stringa[1]=':';  
+	stringa[6]='\0';
+    itoa((uint16_t) attic_memory_screen+(STEP_MEMORY_SCREEN*level), stringa+2,16);
+    debug_msg(stringa);
+
+    #endif
+    setscreen(attic_memory_screen+(STEP_MEMORY_SCREEN*level));
+
+    return;
+}
+
 
 void setup_resource(void){
 

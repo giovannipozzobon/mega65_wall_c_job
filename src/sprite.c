@@ -6,7 +6,7 @@
 #include <gest_game.h>
 #include <stdint.h>
 
-#define DEBUG
+//#define DEBUG
 
 
 void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
