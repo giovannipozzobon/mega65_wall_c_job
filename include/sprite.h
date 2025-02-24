@@ -21,12 +21,13 @@ struct _SPRITE {
     uint8_t door;
     uint8_t collision;
     uint16_t jumping;
+    uint8_t key_collected;
 
 };
 
 // Array of jump spread 
-char spread_horiz[]= {0,5,5,5,5,0};
-char spread_vert[]= {-5,-5,0,0,5,5};
+char spread_horiz[]= {0,4,4,4,4,0};
+char spread_vert[]= {-8,-8,0,0,8,8};
 
 void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X);
 

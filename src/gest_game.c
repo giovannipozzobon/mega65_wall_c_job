@@ -5,6 +5,7 @@
 #include "chips.h"
 
 
+
 //#define DEBUG
 
 int read_char(int x, int y){
@@ -33,3 +34,7 @@ int read_char(int x, int y){
 
 }
 
+void delete_key(uint8_t Pos_Char_X, uint8_t Pos_Char_Y){
+    FAR_U8_PTR(SCREEN_MAP) [Pos_Char_Y*80+Pos_Char_X*2] = SPACE;
+    FAR_U8_PTR(SCREEN_MAP) [Pos_Char_Y*80+Pos_Char_X*2+1] = ((CHARSET_MEMORY / 64) >> 8);
+}

@@ -11,7 +11,7 @@
 #include <func_job.h>
 #include <sprite.h>
 
-#define DEBUG
+//#define DEBUG
 
 
 #pragma require __preserve_zp
@@ -56,6 +56,14 @@ void main(void) {
         //wait_very_briefly(DELAY_JOY);
         wait_raster(DELAY_JOY);
         gameloop();
+        
+        if (sprite->door == TRUE) {
+            #ifdef DEBUG
+            debug_msg("LOAD NEW LEVEL ");
+            #endif
+            level++;
+            load_screen(level);
+        }
     }
 
     return;
