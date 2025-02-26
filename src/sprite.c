@@ -6,6 +6,7 @@
 #include <gest_game.h>
 #include <stdint.h>
 
+
 //#define DEBUG
 #define DEBUG_LIGTH
 
@@ -768,3 +769,154 @@ void jumpsprite_left(Sprite *sprite){
     //check if the sprite doesn't reach the floor
     check_fall_left(sprite);
 }    
+
+/// Routine nemico
+
+void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, uint8_t velX, uint8_t velY, uint16_t limiteSinistro, uint16_t limiteDestro, uint16_t distanzaMinima, StatoNemico stato, TypeEnemy type){
+
+
+    nemico->sprite_number = sprite_number;
+    nemico->posX = x;
+    nemico->posY = y;
+    nemico->velX = velX;
+    nemico->velY = velY;
+    nemico->limiteSinistro = limiteSinistro;
+    nemico->limiteDestro = limiteDestro;
+    nemico->distanzaMinima = distanzaMinima;
+    nemico->stato= stato;
+    nemico->shape = KEYS;
+    nemico->PosCharX_old = x;
+    nemico->PosCharY_old = y;
+    nemico->type = type;
+
+    debug_msg("CREA NEMICO");
+    char stringa[10];
+    stringa[0]='J';  
+    stringa[1]=':';  
+    stringa[6]='\0';
+    itoa((int)nemico->PosCharY_old, stringa+2,10);
+    debug_msg(stringa);
+
+}
+
+// Funzione per aggiornare il nemico
+void aggiornaNemico(Nemico *n, int playerX) {
+    Waypoint target = percorso[n->targetIndex]; // Prossimo obiettivo
+    
+    n->PosCharX_old = n->posX;
+    n->PosCharY_old = n->posY;
+
+    switch (n->type)
+    {
+    case LINEARE:
+        n->posX = n->posX + n->velX;
+
+        if (n->posX >= n->limiteDestro || n->posX <= n->limiteSinistro) {
+            n->velX = -n->velX;
+        }
+
+        break;
+
+    case WAYPOINT:
+
+        // Calcola la direzione del movimento
+        if (n->posX < target.x) n->posX += n->velX;
+        if (n->posX > target.x) n->posX -= n->velX;
+        if (n->posY < target.y) n->posY += n->velY;
+        if (n->posY > target.y) n->posY -= n->velY;
+
+        // Se il nemico raggiunge il waypoint, passa al successivo
+        if (n->posX == target.x && n->posY == target.y) {
+            if (n->avanti) {
+                n->targetIndex++; // Passa al prossimo waypoint
+                if (n->targetIndex >= NUM_WAYPOINTS) {
+                    n->targetIndex = NUM_WAYPOINTS - 2; // Torna indietro
+                    n->avanti = false;
+                }
+            } else {
+                n->targetIndex--; // Torna indietro
+                if (n->targetIndex < 0) {
+                    n->targetIndex = 1; // Inizia di nuovo
+                    n->avanti = true;
+                }
+            }
+        }
+            
+        break;
+        
+    default:
+        break;
+    }
+
+
+    debug_msg("AGGIORNAMENTO NEMICO");
+    char stringa[10];
+    stringa[0]='J';  
+    stringa[1]=':';  
+    stringa[6]='\0';
+    itoa((int)n->velX, stringa+2,10);
+    debug_msg(stringa);
+    /*
+    switch (n->stato) {
+        case PATROL:
+            // Muove il nemico avanti e indietro
+            n->posX += n->velX;
+
+            // Se raggiunge un bordo, cambia direzione
+            if (n->posX >= n->limiteDestro || n->posX <= n->limiteSinistro) {
+                n->velX = -n->velX;
+            }
+
+            // Se il giocatore è vicino, cambia stato in CHASE
+            if (abs(n->posX - playerX) < n->distanzaMinima) {
+                n->stato = CHASE;
+            }
+            break;
+
+        case CHASE:
+            // Insegue il giocatore avvicinandosi alla sua X
+            if (playerX > n->posX) {
+                n->posX += 2; // Si muove più velocemente a destra
+            } else if (playerX < n->posX) {
+                n->posX -= 2; // Si muove più velocemente a sinistra
+            }
+
+            // Se il giocatore esce dal raggio, torna in RETURN
+            if (abs(n->posX - playerX) > n->distanzaMinima + 20) {
+                n->stato = RETURN;
+            }
+            break;
+
+        case RETURN:
+            // Torna verso il punto iniziale di pattuglia
+            if (n->posX > (n->limiteSinistro + n->limiteDestro) / 2) {
+                n->posX -= 1;
+            } else {
+                n->posX += 1;
+            }
+
+            // Se raggiunge la zona centrale, torna in PATROL
+            if (abs(n->posX - (n->limiteSinistro + n->limiteDestro) / 2) < 2) {
+                n->stato = PATROL;
+            }
+            break;
+    }
+    */
+}
+
+void drawnemico(Nemico *nemico){
+
+    
+    delete_enemy(nemico);
+
+    draw_enemy(nemico);
+
+    debug_msg("DRAW NEMICO");
+    char stringa[10];
+    stringa[0]='J';  
+    stringa[1]=':';  
+    stringa[6]='\0';
+    itoa((int)nemico->PosCharX_old, stringa+2,10);
+    debug_msg(stringa);
+
+}
