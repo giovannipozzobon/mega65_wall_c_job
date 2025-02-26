@@ -16,8 +16,6 @@
 
 #pragma require __preserve_zp
 
-struct _SPRITE sprite[8]; 
-
 struct map_t __attribute__((zpage)) map_regs;
 struct m65_dirent __attribute__((zpage)) *m65_dirent_exchange;
 
@@ -26,14 +24,21 @@ unsigned char bank_file;
 
 uint8_t level;
 
+Sprite  * sprite, * sprite_monster;
+
 void loadresource(void);
 void setup_resource(void);
 void gameloop(void);
 void load_screen(uint8_t level);
+void move_monsters(void);
 
 
 
 void main(void) {
+
+    //alloc memory for Sprite array 
+    sprite = malloc(sizeof(Sprite));
+    sprite_monster = malloc(sizeof(Sprite));
 
     //level 0 (first level)
     level = 0;
@@ -48,7 +53,8 @@ void main(void) {
 	//drawsprite(&sprite[0]);
 
 	// Create Sprite 1
-	create_sprite(&sprite[1], 1, 0x80, 0x80,0b11111101,0b00000010);
+	//create_sprite(&sprite[1], 1, 0x80, 0x80,0b11111101,0b00000010); 
+    create_sprite(sprite_monster, 1, 0x80, 0x80,0b11111101,0b00000010);
 	//drawsprite(&sprite[1]);
 
 
@@ -64,8 +70,11 @@ void main(void) {
             level++;
             load_screen(level);
         }
+
+        move_monsters();
     }
 
+    free(sprite);
     return;
 
 }
@@ -164,6 +173,23 @@ void gameloop(void) {
     }  
 
     return;
+}
+
+void move_monsters (void) {
+
+    if (sprite_monster->x > 320){
+
+        sprite_monster->step_direction = -1;
+    } 
+    if (sprite_monster->x <= 24){
+
+        sprite_monster->step_direction = 1;
+    }   
+
+    sprite_monster->x = sprite_monster->x + sprite_monster->step_direction;
+
+    drawsprite_monster(sprite_monster);
+
 }
 
 void loadresource(void) {

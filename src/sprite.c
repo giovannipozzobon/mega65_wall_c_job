@@ -10,7 +10,7 @@
 #define DEBUG_LIGTH
 
 
-void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
+void create_sprite(Sprite *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
     sprite->sprite_number = sprite_number;
     sprite->x = x;
     sprite->y = y;
@@ -23,9 +23,10 @@ void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned ch
     sprite->ladder = FALSE;
     sprite->collision = FALSE;
     sprite->key_collected = 0;
+    sprite->step_direction = 1;
 }
 
-void drawsprite(struct _SPRITE *sprite) {
+void drawsprite(Sprite *sprite) {
 
     poke(0xd001+sprite->sprite_number, sprite->y);
 
@@ -33,12 +34,18 @@ void drawsprite(struct _SPRITE *sprite) {
         poke(0xd000+sprite->sprite_number, sprite->x);
         //VIC2.S0X = sprite->x;
         VIC2.SXMSB = VIC2.SXMSB & sprite->bit_Minus_X; // Abilita il bit dello coordinate X <= 254 dello sprite
+        #ifdef DEBUG_LIGTH
+        debug_msg("DRAW SPRITE SXMSB MIN");
+        #endif
 
     }
     else {
         poke(0xd000+sprite->sprite_number, sprite->x-255);
         //VIC2.S0X = sprite->x-255;
         VIC2.SXMSB = VIC2.SXMSB | sprite->bit_Mag_X; // Abilita il bit dello coordinate X > 254 dello sprite
+        #ifdef DEBUG_LIGTH
+        debug_msg("DRAW SPRITE SXMSB MAG");
+        #endif
 
     }
     
@@ -70,7 +77,63 @@ void drawsprite(struct _SPRITE *sprite) {
 
 }
 
-void check_fall_left(struct _SPRITE *sprite){ 
+void drawsprite_monster(Sprite *sprite) {
+
+    poke(0xd000+(sprite->sprite_number*2)+1, sprite->y);
+
+    if (sprite->x <= 254) {
+        poke(0xd000+(sprite->sprite_number*2), sprite->x);
+        //VIC2.S0X = sprite->x;
+        VIC2.SXMSB = VIC2.SXMSB & sprite->bit_Minus_X; // Abilita il bit dello coordinate X <= 254 dello sprite
+
+    }
+    else {
+        poke(0xd000+(sprite->sprite_number*2), sprite->x-255);
+        //VIC2.S0X = sprite->x-255;
+        VIC2.SXMSB = VIC2.SXMSB | sprite->bit_Mag_X; // Abilita il bit dello coordinate X > 254 dello sprite
+
+    }
+
+/*
+poke(0xd003, sprite->y);
+
+if (sprite->x <= 254) {
+
+    //VIC2.S0X = sprite->x;
+    VIC2.SXMSB = VIC2.SXMSB & sprite->bit_Minus_X; // Abilita il bit dello coordinate X <= 254 dello sprite 
+    poke(0xd002, sprite->x);
+    #ifdef DEBUG_LIGTH
+    debug_msg("DRAW MONSTER SXMSB MIN");
+    #endif
+
+}
+else {
+    poke(0xd002, sprite->x-255);
+    //VIC2.S0X = sprite->x-255;
+    VIC2.SXMSB = VIC2.SXMSB | sprite->bit_Mag_X; // Abilita il bit dello coordinate X > 254 dello sprite
+    #ifdef DEBUG_LIGTH
+    debug_msg("DRAW MONSTER SXMSB MAG");
+    #endif
+
+}
+*/
+
+#ifdef DEBUG
+char stringa[10];
+stringa[0]='H';  
+stringa[1]=':';  
+stringa[6]='\0';
+itoa(sprite->bit_Minus_X, stringa+2,10);
+debug_msg(stringa);
+#endif
+
+
+wait_raster(DELAY_JOY);
+
+}
+
+
+void check_fall_left(Sprite *sprite){ 
     int Char;
 
     #ifdef DEBUG_LIGTH
@@ -107,7 +170,7 @@ void check_fall_left(struct _SPRITE *sprite){
 
 }
 
-void check_fall_rigth(struct _SPRITE *sprite){ 
+void check_fall_rigth(Sprite *sprite){ 
     int Char, Char1;
 
     #ifdef DEBUG_LIGTH
@@ -145,7 +208,7 @@ void check_fall_rigth(struct _SPRITE *sprite){
 
 }
 
-void movesprite(struct _SPRITE *sprite, int x, char y) {
+void movesprite(Sprite *sprite, int x, char y) {
 
     sprite->x = sprite->x + x;
     sprite->y = sprite->y + y;
@@ -166,7 +229,7 @@ void movesprite(struct _SPRITE *sprite, int x, char y) {
     #endif
 }
 
-void movesprite_left(struct _SPRITE *sprite){
+void movesprite_left(Sprite *sprite){
     int Char;
     
     //Check coordinate x and collision
@@ -360,7 +423,7 @@ void movesprite_left(struct _SPRITE *sprite){
 
 }
 
-void movesprite_rigth(struct _SPRITE *sprite){
+void movesprite_rigth(Sprite *sprite){
     int Char;
 
     //Check coordinate x and collision
@@ -553,7 +616,7 @@ void movesprite_rigth(struct _SPRITE *sprite){
     
 }
 
-void movesprite_up(struct _SPRITE *sprite){
+void movesprite_up(Sprite *sprite){
     int Char;
 
     // reset variables
@@ -571,7 +634,7 @@ void movesprite_up(struct _SPRITE *sprite){
 
 }
 
-void movesprite_down(struct _SPRITE *sprite){
+void movesprite_down(Sprite *sprite){
     int Char;
 
     // reset variables
@@ -590,7 +653,7 @@ void movesprite_down(struct _SPRITE *sprite){
  
 }
 
-void jumpsprite(struct _SPRITE *sprite){
+void jumpsprite(Sprite *sprite){
     int count = 0;
 
     //Check if it can jump
@@ -618,7 +681,7 @@ void jumpsprite(struct _SPRITE *sprite){
     }
 }      
 
-void jumpsprite_rigth(struct _SPRITE *sprite){
+void jumpsprite_rigth(Sprite *sprite){
     int count = 0;
     int Char;
 
@@ -663,7 +726,7 @@ void jumpsprite_rigth(struct _SPRITE *sprite){
 }      
 
 
-void jumpsprite_left(struct _SPRITE *sprite){
+void jumpsprite_left(Sprite *sprite){
     int count = 0;
     int Char;
 

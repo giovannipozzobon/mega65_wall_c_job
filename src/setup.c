@@ -6,7 +6,7 @@
 
 __attribute__((aligned(64))) unsigned int SPRITE_SPACE[360];
 
-extern struct _SPRITE sprite[8];
+extern Sprite *sprite;
 
 void initial_setup(void){
 	__disable_interrupts();

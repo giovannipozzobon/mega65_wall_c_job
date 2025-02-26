@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct _SPRITE {
+typedef struct {
     uint16_t sprite_number;
     uint16_t x;
     uint8_t y;
@@ -22,25 +22,26 @@ struct _SPRITE {
     uint8_t collision;
     uint16_t jumping;
     uint8_t key_collected;
+    uint16_t step_direction;
 
-};
+} Sprite;
 
 // Array of jump spread 
 char spread_horiz[]= {0,4,4,4,4,0};
 char spread_vert[]= {-8,-8,0,0,8,8};
 
-void create_sprite(struct _SPRITE *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X);
+void create_sprite(Sprite *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X);
 
-void drawsprite(struct _SPRITE *sprite);
+void drawsprite(Sprite *sprite);
 
-void movesprite(struct _SPRITE *sprite, int x, char y);
-void movesprite_left(struct _SPRITE *sprite);
-void movesprite_rigth(struct _SPRITE *sprite);
-void movesprite_up(struct _SPRITE *sprite);
-void movesprite_down(struct _SPRITE *sprite);
-void check_fall_left(struct _SPRITE *sprite);
-void check_fall_rigth(struct _SPRITE *sprite);
-void jumpsprite(struct _SPRITE *sprite);
+void movesprite(Sprite *sprite, int x, char y);
+void movesprite_left(Sprite *sprite);
+void movesprite_rigth(Sprite *sprite);
+void movesprite_up(Sprite *sprite);
+void movesprite_down(Sprite *sprite);
+void check_fall_left(Sprite *sprite);
+void check_fall_rigth(Sprite *sprite);
+void jumpsprite(Sprite *sprite);
 
 
 

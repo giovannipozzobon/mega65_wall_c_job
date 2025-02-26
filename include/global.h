@@ -37,6 +37,7 @@
 #define LEN_CHARSET 16384
 #define LEN_SCREEN  2000
 #define LEN_SPRITE  360
+#define NUM_OF_SPRITE 2
 
 #define STEP_MEMORY_SCREEN 0xb00
 

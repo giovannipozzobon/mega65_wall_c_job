@@ -48,7 +48,7 @@ obj/%-debug.o: %.c
 	cc6502 --target=mega65 --debug --list-file=$(@:%.o=%.lst) -o $@ $<
 
 wall.prg:  $(OBJS)
-	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^ --rtattr printf=nofloat --rtattr exit=simplified --output-format=prg --verbose --list-file=./obj/wall-mega65.cmap
+	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^ --rtattr printf=nofloat --rtattr exit=simplified --output-format=prg  --list-file=./obj/wall-mega65.cmap
 #	ln6502 --target=mega65 mega65-plain.scm  -o $@ $^  --output-format=prg --list-file=wall-mega65.lst
 #	$(ACME) -f cbm -o install.prg -l install.lst -r install.rpt ./src/install.s
 
