@@ -3,7 +3,7 @@
 #include <global.h>
 #include <string.h>
 
-#define DEBUG
+//#define DEBUG
 
 unsigned char * makefilename(char * filename){
     unsigned char * namefile;

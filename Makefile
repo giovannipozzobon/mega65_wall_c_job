@@ -85,6 +85,6 @@ mega65:
 	test -f test-fileio.prg && $(ETHLOAD) $(ETHLOAD_IP_PARAM) -m wall.d81
 
 jtag:
-#	m65.osx -l /dev/cu.usbserial-B002YK9V -@ wall.prg@2001	
+#	m65.osx -l /dev/cu.usbserial-B002YK9V -d wall.d81 	
 	$(M65FTP)  $(ETHLOAD_IP_PARAM) -e -c"put wall.d81"
 	

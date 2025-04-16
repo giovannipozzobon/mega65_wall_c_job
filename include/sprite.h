@@ -36,7 +36,7 @@ typedef struct {
 } Sprite;
 
 // Type of enemy
-typedef enum { LINEARE, WAYPOINT } TypeEnemy;
+typedef enum { LINEARE, WAYPOINT, AI } TypeEnemy;
 
 // Stati del nemico
 typedef enum { PATROL, CHASE, RETURN } StatoNemico;

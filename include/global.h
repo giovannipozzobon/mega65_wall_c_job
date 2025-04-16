@@ -39,6 +39,7 @@
 #define LEN_SPRITE  360
 #define NUM_OF_SPRITE 2
 
+
 #define STEP_MEMORY_SCREEN 0xb00
 
 #define TITLE_LINE_LENGTH     80

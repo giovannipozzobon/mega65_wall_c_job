@@ -8,8 +8,12 @@
 
 
 //#define DEBUG
-#define DEBUG_LIGTH
+//#define DEBUG_LIGTH
 
+// Calcola distanza Manhattan (|x1-x2| + |y1-y2|)
+int manhattan_distance(int x1, int y1, int x2, int y2) {
+    return abs(x1 - x2) + abs(y1 - y2);
+}
 
 void create_sprite(Sprite *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
     sprite->sprite_number = sprite_number;
@@ -789,6 +793,7 @@ void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, u
     nemico->PosCharY_old = y;
     nemico->type = type;
 
+    #ifdef DEBUG_LIGTH 
     debug_msg("CREA NEMICO");
     char stringa[10];
     stringa[0]='J';  
@@ -796,11 +801,16 @@ void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, u
     stringa[6]='\0';
     itoa((int)nemico->PosCharY_old, stringa+2,10);
     debug_msg(stringa);
+    #endif
 
 }
 
 // Funzione per aggiornare il nemico
-void aggiornaNemico(Nemico *n, int playerX) {
+void aggiornaNemico(Nemico *n, int playerX, int playerY) {
+
+    int best_dir = -1;
+    int best_dist = 9999;
+
     Waypoint target = percorso[n->targetIndex]; // Prossimo obiettivo
     
     n->PosCharX_old = n->posX;
@@ -843,12 +853,48 @@ void aggiornaNemico(Nemico *n, int playerX) {
         }
             
         break;
-        
+    case AI:
+        // Calcola direzione ottimale (insegui il giocatore)
+
+        // Prova tutte le 4 direzioni
+        for (int dir = 0; dir < 4; dir++) {
+            int new_x = n->posX;
+            int new_y = n->posY;
+
+            switch (dir) {
+                case 0: new_y -= n->velY; break;  // Su
+                case 1: new_x += n->velX; break;  // Destra
+                case 2: new_y += n->velY; break;  // Giù
+                case 3: new_x -= n->velX; break;  // Sinistra
+            }
+
+            // Se la nuova posizione è valida e più vicina al giocatore
+            if (new_x > 0 && new_x < TITLE_LINE_LENGTH - 1 && new_y > 0 && new_y < TITLE_LINE_COUNT - 1) {
+                int dist = manhattan_distance(new_x, new_y, playerX, playerY);
+                if (dist < best_dist) {
+                    best_dist = dist;
+                    best_dir = dir;
+                }
+            }
+        }
+
+        // Applica la migliore direzione
+        if (best_dir != -1) {
+            switch (best_dir) {
+                case 0: n->posY-= n->velY; break;
+                case 1: n->posX+= n->velX; break;
+                case 2: n->posY-= n->velY; break;
+                case 3: n->posX-= n->velX; break;
+            }
+        }
+ 
+    break;
+
     default:
         break;
     }
 
-
+    #ifdef DEBUG
     debug_msg("AGGIORNAMENTO NEMICO");
     char stringa[10];
     stringa[0]='J';  
@@ -856,6 +902,7 @@ void aggiornaNemico(Nemico *n, int playerX) {
     stringa[6]='\0';
     itoa((int)n->velX, stringa+2,10);
     debug_msg(stringa);
+    #endif
     /*
     switch (n->stato) {
         case PATROL:
@@ -911,6 +958,7 @@ void drawnemico(Nemico *nemico){
 
     draw_enemy(nemico);
 
+    #ifdef DEBUG
     debug_msg("DRAW NEMICO");
     char stringa[10];
     stringa[0]='J';  
@@ -918,5 +966,6 @@ void drawnemico(Nemico *nemico){
     stringa[6]='\0';
     itoa((int)nemico->PosCharX_old, stringa+2,10);
     debug_msg(stringa);
+    #endif
 
 }

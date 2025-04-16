@@ -24,8 +24,8 @@ unsigned char bank_file;
 
 uint8_t level;
 
-Sprite  * sprite, * sprite_monster;
-Nemico * nemico, *nemico_waypoint;
+Sprite  *sprite, *sprite_monster;
+Nemico *nemico, *nemico_waypoint, *nemico_ai;
 
 void loadresource(void);
 void setup_resource(void);
@@ -42,6 +42,7 @@ void main(void) {
     sprite_monster = malloc(sizeof(Sprite));
     nemico = malloc(sizeof(Nemico));
     nemico_waypoint = malloc(sizeof(Nemico));
+    nemico_ai = malloc(sizeof(Nemico));
 
     //level 0 (first level)
     level = 0;
@@ -60,11 +61,15 @@ void main(void) {
     create_sprite(sprite_monster, 1, 0x80, 0x80,0b11111101,0b00000010);
 	//drawsprite(&sprite[1]);
     
-    //crea_nemico(nemico, 1, 10, 10, 1, 1, 1, 39, 8, PATROL, LINEARE);
-    //drawnemico(nemico);
+    crea_nemico(nemico, 1, 10, 10, 1, 1, 1, 39, 8, PATROL, LINEARE);
+    drawnemico(nemico);
 
     crea_nemico(nemico_waypoint, 2, 30, 10, 1, 1, 1, 39, 8, PATROL, WAYPOINT);
     drawnemico(nemico_waypoint);
+
+    crea_nemico(nemico_ai, 3, 30, 10, 1, 1, 1, 39, 8, PATROL, AI);
+    drawnemico(nemico_ai);
+    
 
     while(1) {
         //wait_very_briefly(DELAY_JOY);
@@ -80,18 +85,21 @@ void main(void) {
         }
 
         //move_monsters();
-        aggiornaNemico(nemico, sprite->x);
-        drawnemico(nemico);
+        //aggiornaNemico(nemico, sprite->x, sprite->y);
+        //drawnemico(nemico);
 
-        aggiornaNemico(nemico_waypoint, sprite->x);
-        drawnemico(nemico_waypoint);
+        //aggiornaNemico(nemico_waypoint, sprite->x, sprite->y);
+        //drawnemico(nemico_waypoint);
 
+        aggiornaNemico(nemico_ai, sprite->x, sprite->y);
+        drawnemico(nemico_ai);
     }
 
     free(sprite);
     return;
 
 }
+
 
 void gameloop(void) {
 
