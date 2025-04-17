@@ -13,6 +13,7 @@
 // Calcola distanza Manhattan (|x1-x2| + |y1-y2|)
 int manhattan_distance(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
+
 }
 
 void create_sprite(Sprite *sprite, int sprite_number, int x, unsigned char y, unsigned char bit_Minus_X, unsigned char bit_Mag_X) {
@@ -789,9 +790,12 @@ void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, u
     nemico->distanzaMinima = distanzaMinima;
     nemico->stato= stato;
     nemico->shape = KEYS;
+    nemico->shape_old = SPACE; 
     nemico->PosCharX_old = x;
     nemico->PosCharY_old = y;
     nemico->type = type;
+    nemico->cycle_delay = CYCLE_DELAY;
+    nemico->count_delay = 0;
 
     #ifdef DEBUG_LIGTH 
     debug_msg("CREA NEMICO");
@@ -806,12 +810,19 @@ void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, u
 }
 
 // Funzione per aggiornare il nemico
-void aggiornaNemico(Nemico *n, int playerX, int playerY) {
+uint8_t aggiornaNemico(Nemico *n, int playerX, int playerY) {
 
     int best_dir = -1;
     int best_dist = 9999;
 
-    Waypoint target = percorso[n->targetIndex]; // Prossimo obiettivo
+    if (n->count_delay <= n->cycle_delay) {
+        n->count_delay ++;
+        return (0);
+    }
+    //reset counter
+    n->count_delay = 0;
+
+    Waypoint target = percorso[n->targetIndex]; // next target
     
     n->PosCharX_old = n->posX;
     n->PosCharY_old = n->posY;
@@ -856,6 +867,7 @@ void aggiornaNemico(Nemico *n, int playerX, int playerY) {
     case AI:
         // Calcola direzione ottimale (insegui il giocatore)
 
+
         // Prova tutte le 4 direzioni
         for (int dir = 0; dir < 4; dir++) {
             int new_x = n->posX;
@@ -869,8 +881,8 @@ void aggiornaNemico(Nemico *n, int playerX, int playerY) {
             }
 
             // Se la nuova posizione è valida e più vicina al giocatore
-            if (new_x > 0 && new_x < TITLE_LINE_LENGTH - 1 && new_y > 0 && new_y < TITLE_LINE_COUNT - 1) {
-                int dist = manhattan_distance(new_x, new_y, playerX, playerY);
+            if (new_x > 0 && new_x < SCREEN_LENGTH - 1 && new_y > 0 && new_y < SCREEN_HEIGTH - 1 && check_collision_back_ground(new_x,new_y)) {
+                int dist = manhattan_distance((new_x)*8, (new_y)*8, playerX-16, playerY-16); // il -16 sistema il controllo 
                 if (dist < best_dist) {
                     best_dist = dist;
                     best_dir = dir;
@@ -883,15 +895,26 @@ void aggiornaNemico(Nemico *n, int playerX, int playerY) {
             switch (best_dir) {
                 case 0: n->posY-= n->velY; break;
                 case 1: n->posX+= n->velX; break;
-                case 2: n->posY-= n->velY; break;
+                case 2: n->posY+= n->velY; break;
                 case 3: n->posX-= n->velX; break;
             }
         }
- 
+
+        #ifdef DEBUG_LIGTH 
+        debug_msg("AGGIORNA NEMICO AI");
+        char stringa[10];
+        stringa[0]='J';  
+        stringa[1]=':';  
+        stringa[6]='\0';
+        itoa((int)n->posX, stringa+2,10);
+        debug_msg(stringa);
+        #endif
+
     break;
 
     default:
         break;
+
     }
 
     #ifdef DEBUG
@@ -949,12 +972,17 @@ void aggiornaNemico(Nemico *n, int playerX, int playerY) {
             break;
     }
     */
+
+
+   return(-1);
 }
 
 void drawnemico(Nemico *nemico){
 
     
     delete_enemy(nemico);
+
+    save_char_pos_enemy(nemico);
 
     draw_enemy(nemico);
 
@@ -968,4 +996,12 @@ void drawnemico(Nemico *nemico){
     debug_msg(stringa);
     #endif
 
+}
+
+// verifica se il nemico sta andanto contro un muro una porta
+// oppure se invece la via è libera
+int check_collision_back_ground(int x, int y){
+    int car = read_char(x, y);
+    if (car == WALL || car == DOORS) return 0;
+    return(-1); 
 }

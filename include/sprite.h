@@ -59,6 +59,8 @@ typedef struct {
     uint8_t type;
     uint8_t targetIndex;
     bool avanti;
+    uint16_t cycle_delay;
+    uint16_t count_delay;
 } Nemico;
 
 // perscorso nemico waypoint
@@ -76,6 +78,8 @@ void crea_nemico(Nemico *nemico, uint16_t sprite_number, uint8_t x, uint8_t y, u
 
 void drawsprite(Sprite *sprite);
 void drawnemico(Nemico *nemico);
+uint8_t aggiornaNemico(Nemico *n, int playerX, int playerY);
+int check_collision_back_ground(int x, int y);
 
 void movesprite(Sprite *sprite, int x, char y);
 void movesprite_left(Sprite *sprite);
@@ -85,6 +89,7 @@ void movesprite_down(Sprite *sprite);
 void check_fall_left(Sprite *sprite);
 void check_fall_rigth(Sprite *sprite);
 void jumpsprite(Sprite *sprite);
+
 
 
 

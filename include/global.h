@@ -38,6 +38,7 @@
 #define LEN_SCREEN  2000
 #define LEN_SPRITE  360
 #define NUM_OF_SPRITE 2
+#define CYCLE_DELAY 10
 
 
 #define STEP_MEMORY_SCREEN 0xb00
@@ -45,6 +46,8 @@
 #define TITLE_LINE_LENGTH     80
 #define TITLE_LINE_COUNT      24
 
+#define SCREEN_LENGTH     40
+#define SCREEN_HEIGTH     24
 
 /// memoria riservata per i caratteri jobond 20/11/2024
 #define CHARSET_MEMORY 0x44000

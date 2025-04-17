@@ -39,6 +39,23 @@ void delete_key(uint8_t Pos_Char_X, uint8_t Pos_Char_Y){
     FAR_U8_PTR(SCREEN_MAP) [Pos_Char_Y*80+Pos_Char_X*2+1] = ((CHARSET_MEMORY / 64) >> 8);
 }
 
+void save_char_pos_enemy(Nemico *n){
+
+    n->shape_old = FAR_U8_PTR(SCREEN_MAP) [n->posY*80+n->posX*2];
+
+    #ifdef DEBUG
+    char stringa [10];
+    debug_msg("SAVE CHAR POS ENEMY");
+
+    itoa((int) n->shape_old, stringa+2,10);
+    stringa[0]='P';  
+    stringa[1]=':';  
+    stringa[8]='\0';
+    debug_msg(stringa);
+    #endif
+
+}
+
 void delete_enemy(Nemico *n){
 
     #ifdef DEBUG
@@ -89,8 +106,6 @@ void draw_enemy(Nemico *n){
     stringa[6]='\0';
     debug_msg(stringa);
     #endif
-
-    n->shape_old = FAR_U8_PTR(SCREEN_MAP) [n->posY*80+n->posX*2];
 
     FAR_U8_PTR(SCREEN_MAP) [n->posY*80+n->posX*2] = n->shape;
     FAR_U8_PTR(SCREEN_MAP) [n->posY*80+n->posX*2+1] = ((CHARSET_MEMORY / 64) >> 8);

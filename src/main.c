@@ -91,8 +91,8 @@ void main(void) {
         //aggiornaNemico(nemico_waypoint, sprite->x, sprite->y);
         //drawnemico(nemico_waypoint);
 
-        aggiornaNemico(nemico_ai, sprite->x, sprite->y);
-        drawnemico(nemico_ai);
+        if (aggiornaNemico(nemico_ai, sprite->x, sprite->y)) drawnemico(nemico_ai);
+        
     }
 
     free(sprite);

@@ -22,5 +22,6 @@ int read_char(int x, int y);
 void delete_key(uint8_t Pos_Char_X, uint8_t Pos_Char_Y);
 void delete_enemy(Nemico *n);
 void draw_enemy(Nemico *n);
+void save_char_pos_enemy(Nemico *n);
 
 #endif
